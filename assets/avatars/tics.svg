@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Background hex -->
+  <polygon points="60,4 104,28 104,92 60,116 16,92 16,28" fill="#030d0a" stroke="#00ff88" stroke-width="1.5"/>
+  <!-- Glow -->
+  <polygon points="60,4 104,28 104,92 60,116 16,92 16,28" fill="none" stroke="#00ff8840" stroke-width="6"/>
+  <!-- Circuit lines decoration -->
+  <line x1="16" y1="60" x2="30" y2="60" stroke="#00ff8840" stroke-width="1"/>
+  <line x1="104" y1="60" x2="90" y2="60" stroke="#00ff8840" stroke-width="1"/>
+  <circle cx="30" cy="60" r="2" fill="#00ff88" opacity="0.4"/>
+  <circle cx="90" cy="60" r="2" fill="#00ff88" opacity="0.4"/>
+  <!-- Crow body -->
+  <ellipse cx="58" cy="72" rx="20" ry="14" fill="#00ff88"/>
+  <!-- Crow tail -->
+  <polygon points="38,72 24,82 36,71 24,68" fill="#00ff88"/>
+  <!-- Wings -->
+  <ellipse cx="50" cy="65" rx="16" ry="7" transform="rotate(-20 50 65)" fill="#00cc6a"/>
+  <ellipse cx="66" cy="65" rx="16" ry="7" transform="rotate(20 66 65)" fill="#00cc6a"/>
+  <!-- Head -->
+  <circle cx="76" cy="54" r="13" fill="#00ff88"/>
+  <!-- Eye -->
+  <circle cx="79" cy="51" r="4" fill="#030d0a"/>
+  <circle cx="80.5" cy="49.8" r="1.2" fill="#ffffff"/>
+  <!-- Eye glow -->
+  <circle cx="79" cy="51" r="5" fill="none" stroke="#00ffcc" stroke-width=".5" opacity="0.6"/>
+  <!-- Beak -->
+  <polygon points="87,53 98,48 88,58" fill="#00cc6a"/>
+  <!-- Tech glasses/screen on eye -->
+  <rect x="74" y="47" width="12" height="7" rx="1" fill="none" stroke="#00ffcc" stroke-width=".8" opacity="0.7"/>
+  <line x1="74" y1="50.5" x2="86" y2="50.5" stroke="#00ffcc" stroke-width=".4" opacity="0.5"/>
+  <!-- Legs -->
+  <line x1="54" y1="86" x2="51" y2="96" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+  <line x1="51" y1="96" x2="46" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="51" y1="96" x2="51" y2="101" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="62" y1="86" x2="65" y2="96" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+  <line x1="65" y1="96" x2="60" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="65" y1="96" x2="70" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- TICS badge -->
+  <rect x="26" y="30" width="32" height="14" rx="2" fill="#030d0a" stroke="#00ff88" stroke-width="1"/>
+  <text x="42" y="41" text-anchor="middle" font-family="monospace" font-size="7" fill="#00ff88" letter-spacing="1">TICS</text>
+  <!-- Circuit dots -->
+  <circle cx="36" cy="88" r="2" fill="#00ff88" opacity="0.5"/>
+  <circle cx="80" cy="88" r="2" fill="#00ff88" opacity="0.5"/>
+</svg>

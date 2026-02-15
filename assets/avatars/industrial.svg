@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <polygon points="60,4 104,28 104,92 60,116 16,92 16,28" fill="#030d0a" stroke="#00ff88" stroke-width="1.5"/>
+  <polygon points="60,4 104,28 104,92 60,116 16,92 16,28" fill="none" stroke="#00ccff40" stroke-width="6"/>
+  <!-- Industrial pipes/bars decoration -->
+  <rect x="16" y="30" width="6" height="40" fill="#00ccff" opacity="0.2" rx="1"/>
+  <rect x="98" y="30" width="6" height="40" fill="#00ccff" opacity="0.2" rx="1"/>
+  <rect x="22" y="40" width="20" height="3" fill="#00ccff" opacity="0.3" rx="1"/>
+  <rect x="78" y="40" width="20" height="3" fill="#00ccff" opacity="0.3" rx="1"/>
+  <!-- Hard hat -->
+  <ellipse cx="76" cy="43" rx="15" ry="7" fill="#ffaa00" opacity="0.9"/>
+  <rect x="62" y="45" width="28" height="5" rx="1" fill="#ffaa00" opacity="0.7"/>
+  <!-- Crow body -->
+  <ellipse cx="58" cy="72" rx="20" ry="14" fill="#00ff88"/>
+  <polygon points="38,72 24,82 36,71 24,68" fill="#00ff88"/>
+  <ellipse cx="50" cy="65" rx="16" ry="7" transform="rotate(-20 50 65)" fill="#00cc6a"/>
+  <ellipse cx="66" cy="65" rx="16" ry="7" transform="rotate(20 66 65)" fill="#00cc6a"/>
+  <circle cx="76" cy="54" r="13" fill="#00ff88"/>
+  <circle cx="79" cy="51" r="4" fill="#030d0a"/>
+  <circle cx="80.5" cy="49.8" r="1.2" fill="#ffffff"/>
+  <polygon points="87,53 98,48 88,58" fill="#00cc6a"/>
+  <!-- Safety vest stripes -->
+  <line x1="44" y1="68" x2="72" y2="68" stroke="#ffaa00" stroke-width="2.5" opacity="0.7"/>
+  <line x1="44" y1="73" x2="72" y2="73" stroke="#ffaa00" stroke-width="1.5" opacity="0.5"/>
+  <!-- Clipboard/blueprint -->
+  <rect x="24" y="60" width="16" height="20" rx="1" fill="#030d0a" stroke="#00ccff" stroke-width="1"/>
+  <line x1="27" y1="65" x2="37" y2="65" stroke="#00ccff" stroke-width=".8"/>
+  <line x1="27" y1="69" x2="37" y2="69" stroke="#00ccff" stroke-width=".8"/>
+  <line x1="27" y1="73" x2="33" y2="73" stroke="#00ccff" stroke-width=".8"/>
+  <polygon points="27,77 32,72 37,77" fill="none" stroke="#00ccff" stroke-width=".8"/>
+  <!-- Badge -->
+  <rect x="60" y="26" width="48" height="14" rx="2" fill="#030d0a" stroke="#00ccff" stroke-width="1"/>
+  <text x="84" y="35" text-anchor="middle" font-family="monospace" font-size="4.5" fill="#00ccff" letter-spacing="0">ING. INDUSTRIAL</text>
+  <!-- Legs -->
+  <line x1="54" y1="86" x2="51" y2="96" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+  <line x1="51" y1="96" x2="46" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="51" y1="96" x2="51" y2="101" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="62" y1="86" x2="65" y2="96" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+  <line x1="65" y1="96" x2="60" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="65" y1="96" x2="70" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

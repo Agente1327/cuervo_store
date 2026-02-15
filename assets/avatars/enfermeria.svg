@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <polygon points="60,4 104,28 104,92 60,116 16,92 16,28" fill="#030d0a" stroke="#00ff88" stroke-width="1.5"/>
+  <polygon points="60,4 104,28 104,92 60,116 16,92 16,28" fill="none" stroke="#00ccff40" stroke-width="6"/>
+  <!-- Crow body -->
+  <ellipse cx="58" cy="72" rx="20" ry="14" fill="#00ff88"/>
+  <polygon points="38,72 24,82 36,71 24,68" fill="#00ff88"/>
+  <ellipse cx="50" cy="65" rx="16" ry="7" transform="rotate(-20 50 65)" fill="#00cc6a"/>
+  <ellipse cx="66" cy="65" rx="16" ry="7" transform="rotate(20 66 65)" fill="#00cc6a"/>
+  <circle cx="76" cy="54" r="13" fill="#00ff88"/>
+  <circle cx="79" cy="51" r="4" fill="#030d0a"/>
+  <circle cx="80.5" cy="49.8" r="1.2" fill="#ffffff"/>
+  <polygon points="87,53 98,48 88,58" fill="#00cc6a"/>
+  <!-- Nurse cap -->
+  <ellipse cx="76" cy="43" rx="14" ry="5" fill="white" opacity="0.9"/>
+  <line x1="72" y1="43" x2="80" y2="43" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="76" y1="40" x2="76" y2="46" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Stethoscope -->
+  <path d="M60,72 Q55,80 50,86 Q47,90 45,88" fill="none" stroke="#00ccff" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="45" cy="88" r="3.5" fill="none" stroke="#00ccff" stroke-width="1.2"/>
+  <!-- Clipboard -->
+  <rect x="28" y="58" width="14" height="18" rx="1" fill="#030d0a" stroke="#00ccff" stroke-width="1"/>
+  <line x1="31" y1="63" x2="39" y2="63" stroke="#00ccff" stroke-width=".8"/>
+  <line x1="31" y1="67" x2="39" y2="67" stroke="#00ccff" stroke-width=".8"/>
+  <line x1="31" y1="71" x2="36" y2="71" stroke="#00ccff" stroke-width=".8"/>
+  <rect x="32" y="56" width="6" height="4" rx="1" fill="#030d0a" stroke="#00ccff" stroke-width=".8"/>
+  <!-- Pulse line decoration -->
+  <polyline points="18,95 24,95 26,88 29,102 32,90 35,95 42,95" fill="none" stroke="#00ccff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+  <!-- Badge -->
+  <rect x="68" y="28" width="40" height="14" rx="2" fill="#030d0a" stroke="#00ccff" stroke-width="1"/>
+  <text x="88" y="39" text-anchor="middle" font-family="monospace" font-size="5.5" fill="#00ccff" letter-spacing="0.5">ENFERMERIA</text>
+  <!-- Legs -->
+  <line x1="54" y1="86" x2="51" y2="96" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+  <line x1="51" y1="96" x2="46" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="51" y1="96" x2="51" y2="101" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="62" y1="86" x2="65" y2="96" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+  <line x1="65" y1="96" x2="60" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="65" y1="96" x2="70" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

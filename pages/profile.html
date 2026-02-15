@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cuervo Store — Mi Perfil</title>
+  <link rel="stylesheet" href="../css/globals.css"/>
+  <link rel="stylesheet" href="../css/layout.css"/>
+  <style>
+    .profile-grid { display:grid; grid-template-columns:280px 1fr; gap:24px; }
+    @media(max-width:900px){ .profile-grid{grid-template-columns:1fr;} }
+    .profile-sidebar-card { background:var(--bg2); border:1px solid var(--border); padding:28px; clip-path:var(--clip-card); text-align:center; position:sticky; top:80px; }
+    .profile-tabs { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+    .profile-tab { padding:10px 18px; font-family:var(--font-mono); font-size:.65rem; letter-spacing:3px; border:1px solid var(--border); cursor:pointer; transition:all .2s; clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px)); }
+    .profile-tab:hover, .profile-tab.active { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+    .tab-content { display:none; animation:fadeIn .3s ease; }
+    .tab-content.active { display:block; }
+    .avatar-select-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px; }
+    .avatar-opt { border:1px solid var(--border); padding:8px; cursor:pointer; text-align:center; transition:all .2s; clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px)); }
+    .avatar-opt:hover, .avatar-opt.selected { border-color:var(--green); background:var(--green-dim); }
+    .avatar-opt img { width:48px; height:48px; }
+    .avatar-opt span { display:block; font-family:var(--font-mono); font-size:.5rem; color:var(--green); margin-top:4px; }
+    .order-card { background:var(--bg2); border:1px solid var(--border); padding:20px; margin-bottom:12px; clip-path:var(--clip-card); }
+  </style>
+</head>
+<body>
+<div id="crow-cursor"><svg viewBox="0 0 64 64" fill="none"><g><ellipse cx="30" cy="38" rx="14" ry="10" fill="#00ff88"/><polygon points="16,38 6,48 14,37 6,35" fill="#00ff88"/><ellipse cx="24" cy="32" rx="10" ry="5" transform="rotate(-20 24 32)" fill="#00cc6a"/><ellipse cx="36" cy="32" rx="10" ry="5" transform="rotate(20 36 32)" fill="#00cc6a"/><circle cx="42" cy="28" r="8" fill="#00ff88"/><circle cx="44" cy="26" r="2.5" fill="#030d0a"/><circle cx="44.8" cy="25.2" r=".8" fill="#fff"/><polygon points="49,27 56,24 50,30" fill="#00cc6a"/><ellipse id="cw-wing" cx="24" cy="30" rx="11" ry="4" transform="rotate(-30 24 30)" fill="#00ff8866"/></g></svg></div>
+<div id="cursor-ring"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div><div class="scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div id="neo-toast"></div>
+<div id="main-nav"></div>
+
+<main class="cs-main">
+  <div class="cs-container">
+    <div class="page-header">
+      <h1>MI PERFIL</h1>
+      <p>// configuración de cuenta //</p>
+    </div>
+    <div id="profile-content"></div>
+  </div>
+</main>
+
+<script src="../js/app.js"></script>
+<script>
+  const AVATARS = [
+    { file:'assets/avatars/tics.svg', label:'TICS' },
+    { file:'assets/avatars/ventas.svg', label:'VENTAS' },
+    { file:'assets/avatars/paramedico.svg', label:'PARAMEDIC' },
+    { file:'assets/avatars/enfermeria.svg', label:'ENFERMER.' },
+    { file:'assets/avatars/mecanica.svg', label:'MECATRÓN.' },
+    { file:'assets/avatars/industrial.svg', label:'IND.' },
+    { file:'assets/avatars/ferroviaria.svg', label:'FERROVIA.' },
+    { file:'assets/avatars/default.svg', label:'DEFAULT' },
+  ];
+  let selectedAvatar = '';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    Auth.init();
+    if (!Auth.requireAuth()) return;
+    renderNav('');
+    selectedAvatar = Auth.current.avatar;
+    renderProfile();
+  });
+
+  function renderProfile() {
+    const u = Auth.current;
+    const orders = Orders.getByUser(u.id);
+    const myProducts = Products.getBySeller(u.id);
+
+    document.getElementById('profile-content').innerHTML = `
+      <div class="profile-grid">
+        <!-- Sidebar -->
+        <div class="profile-sidebar-card">
+          <div class="avatar-wrap" style="width:90px;height:90px;margin:0 auto 16px;">
+            <img id="profile-avatar-img" src="../${u.avatar}" onerror="this.src='../assets/avatars/default.svg'"/>
+          </div>
+          <div style="font-family:var(--font-display);font-size:1rem;letter-spacing:3px;">${u.name}</div>
+          <div class="neo-badge" style="margin-top:8px;">${u.role.toUpperCase()}</div>
+          <div style="font-family:var(--font-mono);font-size:.65rem;color:var(--gray);margin-top:8px;">${u.career || ''}</div>
+          <div style="font-family:var(--font-mono);font-size:.65rem;color:var(--gray);margin-top:4px;">${u.email}</div>
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.65rem;margin-bottom:8px;">
+              <span style="color:var(--gray);">Órdenes</span><span style="color:var(--green);">${orders.length}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.65rem;margin-bottom:8px;">
+              <span style="color:var(--gray);">Productos</span><span style="color:var(--green);">${myProducts.length}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.65rem;">
+              <span style="color:var(--gray);">Desde</span><span style="color:var(--green);">${new Date(u.createdAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+          <button class="neo-btn full-width danger" style="margin-top:20px;" onclick="Auth.logout()"><span>CERRAR SESIÓN</span></button>
+        </div>
+
+        <!-- Main content -->
+        <div>
+          <div class="profile-tabs">
+            <div class="profile-tab active" onclick="showTab('tab-orders',this)">MIS ÓRDENES</div>
+            <div class="profile-tab" onclick="showTab('tab-edit',this)">EDITAR PERFIL</div>
+            <div class="profile-tab" onclick="showTab('tab-avatar',this)">CAMBIAR AVATAR</div>
+            <div class="profile-tab" onclick="showTab('tab-security',this)">SEGURIDAD</div>
+            ${u.role !== 'buyer' ? `<div class="profile-tab" onclick="window.location.href='sell.html'">MIS VENTAS</div>` : ''}
+          </div>
+
+          <!-- ORDERS -->
+          <div class="tab-content active" id="tab-orders">
+            <h2 class="cs-section-title">⬡ HISTORIAL DE ÓRDENES</h2>
+            ${orders.length === 0 ? `<p style="font-family:var(--font-mono);font-size:.75rem;color:var(--gray);">No tienes órdenes aún.</p>` :
+              orders.map(o => `
+                <div class="order-card">
+                  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                    <div>
+                      <div style="font-family:var(--font-mono);font-size:.7rem;color:var(--green);">${o.id}</div>
+                      <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--gray);">${new Date(o.createdAt).toLocaleString()}</div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                      <span class="neo-badge">${o.status.toUpperCase()}</span>
+                      <span style="font-family:var(--font-display);color:var(--green);font-size:1rem;">${formatPrice(o.total*1.16)}</span>
+                    </div>
+                  </div>
+                  <div style="font-family:var(--font-mono);font-size:.68rem;color:var(--gray);">
+                    ${o.items.map(i => `${i.title} ×${i.qty}`).join(' · ')}
+                  </div>
+                  <div style="margin-top:8px;font-family:var(--font-mono);font-size:.6rem;color:var(--gray);">
+                    Tarjeta: ${o.payment.cardNumber} · ${o.payment.type.toUpperCase()}
+                  </div>
+                </div>
+              `).join('')
+            }
+          </div>
+
+          <!-- EDIT PROFILE -->
+          <div class="tab-content" id="tab-edit">
+            <h2 class="cs-section-title">⬡ EDITAR DATOS</h2>
+            <div class="form-group">
+              <label class="neo-label">▸ Nombre completo</label>
+              <input id="edit-name" class="neo-input" value="${u.name}"/>
+            </div>
+            <div class="form-group">
+              <label class="neo-label">▸ Teléfono</label>
+              <input id="edit-phone" class="neo-input" value="${u.phone||''}"/>
+            </div>
+            <div class="form-group">
+              <label class="neo-label">▸ Carrera</label>
+              <select id="edit-career" class="neo-input" style="background:var(--bg2);">
+                <option value="">-- Selecciona --</option>
+                ${['TICS','Ventas','Paramédico','Enfermería','Mecatrónica','Ingeniería Industrial','Ingeniería Ferroviaria','Otro'].map(c => `<option value="${c}" ${u.career===c?'selected':''}>${c}</option>`).join('')}
+              </select>
+            </div>
+            <button class="neo-btn" onclick="saveProfile()"><span>GUARDAR CAMBIOS</span></button>
+          </div>
+
+          <!-- AVATAR -->
+          <div class="tab-content" id="tab-avatar">
+            <h2 class="cs-section-title">⬡ CAMBIAR AVATAR CUERVO</h2>
+            <div class="avatar-select-grid" id="avatar-select-grid"></div>
+            <button class="neo-btn" style="margin-top:16px;" onclick="saveAvatar()"><span>APLICAR AVATAR</span></button>
+          </div>
+
+          <!-- SECURITY -->
+          <div class="tab-content" id="tab-security">
+            <h2 class="cs-section-title">⬡ SEGURIDAD</h2>
+            <div class="form-group">
+              <label class="neo-label">▸ Contraseña actual</label>
+              <input id="sec-old" class="neo-input" type="password" placeholder="••••••••"/>
+            </div>
+            <div class="form-group">
+              <label class="neo-label">▸ Nueva contraseña</label>
+              <input id="sec-new" class="neo-input" type="password" placeholder="••••••••"/>
+            </div>
+            <div class="form-group">
+              <label class="neo-label">▸ Confirmar nueva contraseña</label>
+              <input id="sec-conf" class="neo-input" type="password" placeholder="••••••••"/>
+            </div>
+            <button class="neo-btn" onclick="changePassword()"><span>CAMBIAR CONTRASEÑA</span></button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Render avatar grid
+    const ag = document.getElementById('avatar-select-grid');
+    ag.innerHTML = AVATARS.map(a => `
+      <div class="avatar-opt ${selectedAvatar===a.file?'selected':''}" onclick="selectAvatarProfile(this,'${a.file}')" data-file="${a.file}">
+        <img src="../${a.file}" onerror="this.src='../assets/avatars/default.svg'"/>
+        <span>${a.label}</span>
+      </div>
+    `).join('');
+  }
+
+  function showTab(id, el) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+  }
+
+  function selectAvatarProfile(el, file) {
+    document.querySelectorAll('.avatar-opt').forEach(a => a.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedAvatar = file;
+    document.getElementById('profile-avatar-img').src = '../' + file;
+  }
+
+  function saveAvatar() {
+    Auth.updateProfile({ avatar: selectedAvatar });
+    Toast.success('Avatar actualizado');
+  }
+
+  function saveProfile() {
+    const name   = document.getElementById('edit-name').value.trim();
+    const phone  = document.getElementById('edit-phone').value.trim();
+    const career = document.getElementById('edit-career').value;
+    if (!name) { Toast.warn('El nombre es obligatorio'); return; }
+    Auth.updateProfile({ name, phone, career });
+    Toast.success('Perfil actualizado');
+    renderProfile();
+  }
+
+  function changePassword() {
+    const oldPass = document.getElementById('sec-old').value;
+    const newPass = document.getElementById('sec-new').value;
+    const conf    = document.getElementById('sec-conf').value;
+    if (!oldPass || !newPass || !conf) { Toast.warn('Completa todos los campos'); return; }
+    if (newPass !== conf) { Toast.error('Las contraseñas no coinciden'); return; }
+    if (newPass.length < 6) { Toast.error('Mínimo 6 caracteres'); return; }
+    const users = DB.getUsers();
+    const u = users.find(u => u.id === Auth.current.id);
+    if (!u || u.password !== btoa(oldPass)) { Toast.error('Contraseña actual incorrecta'); return; }
+    Auth.updateProfile({ password: btoa(newPass) });
+    Toast.success('Contraseña cambiada exitosamente');
+    ['sec-old','sec-new','sec-conf'].forEach(id => document.getElementById(id).value = '');
+  }
+</script>
+</body>
+</html>

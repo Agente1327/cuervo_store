@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <polygon points="60,4 104,28 104,92 60,116 16,92 16,28" fill="#030d0a" stroke="#00ff88" stroke-width="1.5"/>
+  <polygon points="60,4 104,28 104,92 60,116 16,92 16,28" fill="none" stroke="#ff446640" stroke-width="6"/>
+  <!-- Star of Life -->
+  <g transform="translate(34,32) scale(0.7)" opacity="0.8">
+    <line x1="12" y1="0" x2="12" y2="24" stroke="#ff4466" stroke-width="4" stroke-linecap="round"/>
+    <line x1="0" y1="12" x2="24" y2="12" stroke="#ff4466" stroke-width="4" stroke-linecap="round"/>
+    <line x1="2" y1="2" x2="22" y2="22" stroke="#ff4466" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="22" y1="2" x2="2" y2="22" stroke="#ff4466" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="12" cy="12" r="8" fill="none" stroke="#ff4466" stroke-width="2"/>
+    <path d="M8,12 h8 M12,8 v8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <!-- Crow body -->
+  <ellipse cx="58" cy="72" rx="20" ry="14" fill="#00ff88"/>
+  <polygon points="38,72 24,82 36,71 24,68" fill="#00ff88"/>
+  <ellipse cx="50" cy="65" rx="16" ry="7" transform="rotate(-20 50 65)" fill="#00cc6a"/>
+  <ellipse cx="66" cy="65" rx="16" ry="7" transform="rotate(20 66 65)" fill="#00cc6a"/>
+  <circle cx="76" cy="54" r="13" fill="#00ff88"/>
+  <circle cx="79" cy="51" r="4" fill="#030d0a"/>
+  <circle cx="80.5" cy="49.8" r="1.2" fill="#ffffff"/>
+  <polygon points="87,53 98,48 88,58" fill="#00cc6a"/>
+  <!-- Helmet with cross -->
+  <ellipse cx="76" cy="46" rx="14" ry="8" fill="#ff4466" opacity="0.7"/>
+  <line x1="72" y1="46" x2="80" y2="46" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="76" y1="42" x2="76" y2="50" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Stethoscope -->
+  <path d="M58,72 Q52,82 48,88 Q44,92 42,90" fill="none" stroke="#00ffcc" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="42" cy="90" r="3" fill="none" stroke="#00ffcc" stroke-width="1.2"/>
+  <!-- Badge -->
+  <rect x="68" y="28" width="40" height="14" rx="2" fill="#030d0a" stroke="#ff4466" stroke-width="1"/>
+  <text x="88" y="39" text-anchor="middle" font-family="monospace" font-size="5.5" fill="#ff4466" letter-spacing="0.5">PARAMEDIC</text>
+  <!-- Legs -->
+  <line x1="54" y1="86" x2="51" y2="96" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+  <line x1="51" y1="96" x2="46" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="51" y1="96" x2="51" y2="101" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="62" y1="86" x2="65" y2="96" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+  <line x1="65" y1="96" x2="60" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="65" y1="96" x2="70" y2="100" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

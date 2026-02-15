@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cuervo Store — Catálogo</title>
+  <link rel="stylesheet" href="../css/globals.css"/>
+  <link rel="stylesheet" href="../css/layout.css"/>
+</head>
+<body>
+<div id="crow-cursor"><svg viewBox="0 0 64 64" fill="none"><g><ellipse cx="30" cy="38" rx="14" ry="10" fill="#00ff88"/><polygon points="16,38 6,48 14,37 6,35" fill="#00ff88"/><ellipse cx="24" cy="32" rx="10" ry="5" transform="rotate(-20 24 32)" fill="#00cc6a"/><ellipse cx="36" cy="32" rx="10" ry="5" transform="rotate(20 36 32)" fill="#00cc6a"/><circle cx="42" cy="28" r="8" fill="#00ff88"/><circle cx="44" cy="26" r="2.5" fill="#030d0a"/><circle cx="44.8" cy="25.2" r=".8" fill="#fff"/><polygon points="49,27 56,24 50,30" fill="#00cc6a"/><ellipse id="cw-wing" cx="24" cy="30" rx="11" ry="4" transform="rotate(-30 24 30)" fill="#00ff8866"/></g></svg></div>
+<div id="cursor-ring"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div><div class="scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div id="neo-toast"></div>
+<div id="main-nav"></div>
+
+<main class="cs-main">
+  <div class="cs-container">
+    <div class="page-header">
+      <h1>CATÁLOGO</h1>
+      <p>// todos los productos disponibles //</p>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div class="cs-search-bar" id="search-bar-wrap">
+      <input type="text" id="search-input" placeholder="Buscar productos, vendedores, categorías..."/>
+      <button onclick="doSearch()">⬡ BUSCAR</button>
+    </div>
+
+    <div class="cs-sidebar-layout">
+      <!-- SIDEBAR FILTERS -->
+      <aside class="cs-sidebar">
+        <div class="sidebar-title">▸ FILTROS</div>
+
+        <div style="margin-bottom:20px;">
+          <label class="neo-label">CATEGORÍA</label>
+          <div class="filter-chips" id="cat-chips"></div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label class="neo-label">PRECIO (MXN)</label>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <input id="price-min" class="neo-input" type="number" placeholder="Min" style="font-size:.75rem;padding:8px;"/>
+            <input id="price-max" class="neo-input" type="number" placeholder="Max" style="font-size:.75rem;padding:8px;"/>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label class="neo-label">ORDENAR POR</label>
+          <select id="sort-by" class="neo-input" style="background:var(--bg2);font-size:.8rem;padding:10px;margin-top:8px;">
+            <option value="newest">Más recientes</option>
+            <option value="price-asc">Precio: menor a mayor</option>
+            <option value="price-desc">Precio: mayor a menor</option>
+            <option value="rating">Mejor calificados</option>
+            <option value="sold">Más vendidos</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label class="neo-label" style="display:flex;justify-content:space-between;">
+            CALIFICACIÓN MÍNIMA
+          </label>
+          <div id="rating-filter" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;"></div>
+        </div>
+
+        <button class="neo-btn full-width" onclick="applyFilters()"><span>APLICAR</span></button>
+        <button class="neo-btn full-width danger" style="margin-top:8px;" onclick="clearFilters()"><span>LIMPIAR</span></button>
+      </aside>
+
+      <!-- PRODUCTS -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-family:var(--font-mono);font-size:.7rem;color:var(--gray);">
+          <span id="results-count">Cargando...</span>
+          <div class="filter-chips" style="flex-wrap:nowrap;" id="active-filters"></div>
+        </div>
+        <div id="product-grid" class="product-grid"></div>
+        <div id="pagination" class="neo-pagination"></div>
+        <div id="empty-state" style="display:none;text-align:center;padding:80px 0;">
+          <div style="font-size:4rem;opacity:.2;margin-bottom:16px;">⬡</div>
+          <div style="font-family:var(--font-display);font-size:.9rem;letter-spacing:3px;color:var(--gray);">SIN RESULTADOS</div>
+          <p style="font-family:var(--font-mono);font-size:.7rem;color:var(--gray);margin-top:8px;">Intenta con otros filtros</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="cs-footer">
+  <div class="cs-container">
+    <div class="footer-copy">© 2025 CUERVO STORE — CREADO POR MR.CANDY</div>
+  </div>
+</footer>
+
+<script src="../js/app.js"></script>
+<script>
+  const CATS = ['electronica','salud','libros','ropa','seguridad','herramientas','otros'];
+  const PAGE_SIZE = 9;
+  let currentPage = 1;
+  let filteredProducts = [];
+  let selectedCat = '';
+  let selectedRating = 0;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderNav('catalog');
+    // URL param
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('cat')) { selectedCat = params.get('cat'); }
+
+    // Cat chips
+    const catChips = document.getElementById('cat-chips');
+    catChips.innerHTML = `<div class="chip ${!selectedCat?'active':''}" onclick="setCat('',this)">TODOS</div>` +
+      CATS.map(c => `<div class="chip ${selectedCat===c?'active':''}" onclick="setCat('${c}',this)">${c.toUpperCase()}</div>`).join('');
+
+    // Rating filter
+    const rf = document.getElementById('rating-filter');
+    rf.innerHTML = [4,3,2,1].map(n => `
+      <div class="chip" onclick="setRating(${n},this)">${'★'.repeat(n)} +</div>
+    `).join('');
+
+    // Search from URL
+    if (params.get('q')) document.getElementById('search-input').value = params.get('q');
+
+    applyFilters();
+  });
+
+  function setCat(cat, el) {
+    selectedCat = cat;
+    document.querySelectorAll('#cat-chips .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function setRating(n, el) {
+    selectedRating = selectedRating === n ? 0 : n;
+    document.querySelectorAll('#rating-filter .chip').forEach(c => c.classList.remove('active'));
+    if (selectedRating) el.classList.add('active');
+  }
+
+  function doSearch() { applyFilters(); }
+
+  function clearFilters() {
+    selectedCat = ''; selectedRating = 0;
+    document.getElementById('price-min').value = '';
+    document.getElementById('price-max').value = '';
+    document.getElementById('search-input').value = '';
+    document.getElementById('sort-by').value = 'newest';
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('#cat-chips .chip').classList.add('active');
+    applyFilters();
+  }
+
+  function applyFilters() {
+    currentPage = 1;
+    let products = Products.getApproved();
+    const q      = document.getElementById('search-input').value.trim().toLowerCase();
+    const pMin   = parseFloat(document.getElementById('price-min').value) || 0;
+    const pMax   = parseFloat(document.getElementById('price-max').value) || Infinity;
+    const sort   = document.getElementById('sort-by').value;
+    if (q)            products = products.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.sellerName.toLowerCase().includes(q));
+    if (selectedCat)  products = products.filter(p => p.category === selectedCat);
+    if (pMin > 0)     products = products.filter(p => p.price >= pMin);
+    if (pMax < Infinity) products = products.filter(p => p.price <= pMax);
+    if (selectedRating) products = products.filter(p => parseFloat(p.rating) >= selectedRating);
+    // Sort
+    if (sort === 'price-asc')  products.sort((a,b) => a.price - b.price);
+    if (sort === 'price-desc') products.sort((a,b) => b.price - a.price);
+    if (sort === 'rating')     products.sort((a,b) => b.rating - a.rating);
+    if (sort === 'sold')       products.sort((a,b) => b.sold - a.sold);
+    if (sort === 'newest')     products.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    filteredProducts = products;
+    renderPage();
+  }
+
+  function renderPage() {
+    const grid = document.getElementById('product-grid');
+    const empty = document.getElementById('empty-state');
+    const count = document.getElementById('results-count');
+    const total = filteredProducts.length;
+    const start = (currentPage-1)*PAGE_SIZE;
+    const page  = filteredProducts.slice(start, start+PAGE_SIZE);
+    count.textContent = `${total} producto${total!==1?'s':''} encontrado${total!==1?'s':''}`;
+    if (total === 0) { grid.innerHTML = ''; empty.style.display = 'block'; } 
+    else { empty.style.display = 'none'; grid.innerHTML = page.map(productCardHtml).join(''); }
+    renderPagination(total);
+  }
+
+  function productCardHtml(p) {
+    const stars = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5-Math.round(p.rating));
+    return `
+      <div class="product-card" onclick="window.location.href='product.html?id=${p.id}'">
+        <div class="product-card-img">
+          ${p.images&&p.images.length
+            ? `<img src="${p.images[0]}" style="width:100%;height:200px;object-fit:cover;" onerror="this.parentNode.innerHTML='<div style=font-size:3rem;opacity:.2>⬡</div>'"/>`
+            : `<div style="font-size:3rem;opacity:.2">⬡</div>`}
+        </div>
+        <div class="product-card-body">
+          <div class="product-tag">${p.category}</div>
+          <div class="product-title">${p.title}</div>
+          <div style="color:var(--warn);font-size:.8rem;margin:4px 0;">${stars}</div>
+          <div class="product-price">${formatPrice(p.price)}</div>
+          <div class="product-seller">por ${p.sellerName}</div>
+          <div style="margin-top:10px;display:flex;gap:8px;">
+            <button class="neo-btn" style="flex:1;padding:8px;font-size:.55rem;" onclick="event.stopPropagation();addToCart('${p.id}')"><span>+ CARRITO</span></button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPagination(total) {
+    const pages = Math.ceil(total/PAGE_SIZE);
+    const pag = document.getElementById('pagination');
+    if (pages <= 1) { pag.innerHTML = ''; return; }
+    let html = '';
+    if (currentPage > 1) html += `<button onclick="goPage(${currentPage-1})">‹ PREV</button>`;
+    for (let i=1; i<=pages; i++) html += `<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    if (currentPage < pages) html += `<button onclick="goPage(${currentPage+1})">NEXT ›</button>`;
+    pag.innerHTML = html;
+  }
+
+  function goPage(p) { currentPage = p; renderPage(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+  function addToCart(productId) {
+    const p = Products.getById(productId);
+    if (!p) return;
+    Cart.add(p);
+    Toast.success(`${p.title} agregado al carrito`);
+  }
+</script>
+</body>
+</html>

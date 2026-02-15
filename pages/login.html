@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cuervo Store — Iniciar Sesión</title>
+  <link rel="stylesheet" href="../css/globals.css"/>
+  <link rel="stylesheet" href="../css/layout.css"/>
+  <style>
+    body { overflow:hidden; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .login-wrap { position:relative; z-index:5; width:460px; max-width:95vw; animation:fadeUp .6s ease both; }
+    .login-card { background:rgba(3,15,9,.9); border:1px solid var(--green); padding:44px; clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px)); backdrop-filter:blur(24px); box-shadow:0 0 40px var(--green-glow),0 0 100px var(--green-dim); position:relative; }
+    .login-card::before { content:''; position:absolute; top:0; right:0; width:20px; height:20px; background:var(--green); clip-path:polygon(0 0,100% 100%,100% 0); }
+    .login-card::after { content:''; position:absolute; top:0; left:10%; right:10%; height:1px; background:linear-gradient(90deg,transparent,var(--green),transparent); }
+    .logo-area { text-align:center; margin-bottom:32px; }
+    .logo-crow { width:64px; height:64px; margin:0 auto 12px; filter:drop-shadow(0 0 12px var(--green)); animation:floatLogo 4s ease-in-out infinite; }
+    @keyframes floatLogo { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);} }
+    .brand-name { font-family:var(--font-display); font-size:1.6rem; font-weight:900; letter-spacing:6px; text-shadow:0 0 10px var(--green-glow),0 0 30px var(--green-dim); }
+    .brand-name span { color:var(--green); }
+    .brand-sub { font-family:var(--font-mono); font-size:.58rem; letter-spacing:5px; color:var(--green); opacity:.6; margin-top:4px; }
+  </style>
+</head>
+<body>
+<div id="crow-cursor"><svg viewBox="0 0 64 64" fill="none"><g><ellipse cx="30" cy="38" rx="14" ry="10" fill="#00ff88"/><polygon points="16,38 6,48 14,37 6,35" fill="#00ff88"/><ellipse cx="24" cy="32" rx="10" ry="5" transform="rotate(-20 24 32)" fill="#00cc6a"/><ellipse cx="36" cy="32" rx="10" ry="5" transform="rotate(20 36 32)" fill="#00cc6a"/><circle cx="42" cy="28" r="8" fill="#00ff88"/><circle cx="44" cy="26" r="2.5" fill="#030d0a"/><circle cx="44.8" cy="25.2" r=".8" fill="#fff"/><polygon points="49,27 56,24 50,30" fill="#00cc6a"/><ellipse id="cw-wing" cx="24" cy="30" rx="11" ry="4" transform="rotate(-30 24 30)" fill="#00ff8866"/></g></svg></div>
+<div id="cursor-ring"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div id="neo-toast"></div>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="logo-area">
+      <svg class="logo-crow" viewBox="0 0 80 80" fill="none"><ellipse cx="36" cy="50" rx="18" ry="13" fill="#00ff88"/><polygon points="18,50 6,60 16,49 6,46" fill="#00ff88"/><ellipse cx="28" cy="42" rx="14" ry="7" transform="rotate(-22 28 42)" fill="#00cc6a"/><ellipse cx="44" cy="42" rx="14" ry="7" transform="rotate(22 44 42)" fill="#00cc6a"/><circle cx="56" cy="34" r="14" fill="#00ff88"/><circle cx="59" cy="30" r="4.5" fill="#030d0a"/><circle cx="60.5" cy="28.8" r="1.4" fill="#fff"/><polygon points="68,33 78,28 69,40" fill="#00cc6a"/></svg>
+      <div class="brand-name">CUERVO<span>STORE</span></div>
+      <div class="brand-sub">// acceso al sistema //</div>
+    </div>
+
+    <div class="neo-divider"><span></span><small>IDENTIFICACIÓN</small><span></span></div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="neo-label">▸ Correo electrónico</label>
+        <input id="email" type="email" class="neo-input" placeholder="usuario@cuervostore.mx"/>
+      </div>
+      <div class="form-group">
+        <label class="neo-label">▸ Contraseña</label>
+        <input id="pass" type="password" class="neo-input" placeholder="••••••••••"/>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;font-family:var(--font-mono);font-size:.65rem;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="remember" style="accent-color:var(--green);"/> RECORDARME
+        </label>
+        <a href="forgot.html" style="color:var(--green);opacity:.7;">¿OLVIDASTE TU CLAVE?</a>
+      </div>
+      <button type="submit" class="neo-btn full-width" id="submit-btn">
+        <span id="btn-text">INICIAR SESIÓN</span>
+        <span id="btn-loader" style="display:none;"><div class="neo-loader" style="margin:0 auto;"></div></span>
+      </button>
+    </form>
+
+    <div class="neo-divider" style="margin:20px 0;"><span></span><small>o continúa con</small><span></span></div>
+
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button class="neo-btn" style="flex:1;padding:10px;" onclick="Toast.info('Google login próximamente')"><span>G — Google</span></button>
+      <button class="neo-btn" style="flex:1;padding:10px;border-color:var(--green-dark);" onclick="Toast.info('GitHub login próximamente')"><span>⌥ GitHub</span></button>
+    </div>
+
+    <p style="text-align:center;margin-top:20px;font-family:var(--font-mono);font-size:.65rem;color:var(--gray);">
+      ¿SIN CUENTA? <a href="register.html" style="color:var(--green);">REGÍSTRATE AQUÍ</a>
+    </p>
+
+    <!-- Demo credentials -->
+    <div style="margin-top:20px;background:var(--green-dim);border:1px solid var(--border);padding:12px;font-family:var(--font-mono);font-size:.6rem;color:var(--gray);letter-spacing:1px;">
+      <div style="color:var(--green);margin-bottom:6px;letter-spacing:2px;">▸ CREDENCIALES DEMO</div>
+      Admin: admin@cuervostore.mx / admin123<br/>
+      Vendedor: ana@demo.com / demo123
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (Auth.isLoggedIn()) window.location.href = '../index.html';
+  });
+
+  document.getElementById('login-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const pass  = document.getElementById('pass').value;
+    if (!email || !pass) { Toast.warn('Completa todos los campos'); return; }
+    document.getElementById('btn-text').style.display = 'none';
+    document.getElementById('btn-loader').style.display = 'block';
+    setTimeout(() => {
+      const res = Auth.login(email, pass);
+      document.getElementById('btn-text').style.display = 'block';
+      document.getElementById('btn-loader').style.display = 'none';
+      if (res.ok) {
+        Toast.success('Acceso concedido. Bienvenido, ' + res.user.name);
+        setTimeout(() => window.location.href = Auth.isAdmin() ? 'admin/dashboard.html' : '../index.html', 1000);
+      } else {
+        Toast.error(res.msg);
+      }
+    }, 900);
+  });
+</script>
+</body>
+</html>

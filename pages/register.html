@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cuervo Store — Registro</title>
+  <link rel="stylesheet" href="../css/globals.css"/>
+  <link rel="stylesheet" href="../css/layout.css"/>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:80px 16px 40px; }
+    .reg-card { position:relative; z-index:5; width:100%; max-width:600px; background:rgba(3,15,9,.9); border:1px solid var(--green); padding:44px; clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px)); backdrop-filter:blur(24px); box-shadow:0 0 40px var(--green-glow); animation:fadeUp .6s ease both; }
+    .reg-card::before { content:''; position:absolute; top:0; right:0; width:20px; height:20px; background:var(--green); clip-path:polygon(0 0,100% 100%,100% 0); }
+    .avatar-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:12px 0 20px; }
+    .avatar-opt { border:1px solid var(--border); padding:10px; cursor:pointer; text-align:center; transition:all .25s; clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px)); }
+    .avatar-opt:hover { border-color:var(--green); background:var(--green-dim); }
+    .avatar-opt.selected { border-color:var(--green); background:var(--green-mid); box-shadow:0 0 12px var(--green-glow); }
+    .avatar-opt img { width:56px; height:56px; }
+    .avatar-opt span { display:block; font-family:var(--font-mono); font-size:.52rem; letter-spacing:1px; color:var(--green); margin-top:6px; opacity:.8; }
+    .steps-indicator { display:flex; gap:8px; margin-bottom:28px; }
+    .step-dot { flex:1; height:3px; background:var(--border); border-radius:2px; transition:background .3s; }
+    .step-dot.active { background:var(--green); box-shadow:0 0 6px var(--green-glow); }
+    .form-step { display:none; }
+    .form-step.active { display:block; animation:fadeIn .3s ease; }
+    .confirm-box { background:var(--green-dim); border:1px dashed var(--green); padding:20px; margin:16px 0; font-family:var(--font-mono); font-size:.75rem; letter-spacing:2px; text-align:center; }
+    .confirm-code { font-size:2rem; font-family:var(--font-display); color:var(--green); letter-spacing:10px; text-shadow:0 0 10px var(--green-glow); margin:12px 0; }
+  </style>
+</head>
+<body>
+<div id="crow-cursor"><svg viewBox="0 0 64 64" fill="none"><g><ellipse cx="30" cy="38" rx="14" ry="10" fill="#00ff88"/><polygon points="16,38 6,48 14,37 6,35" fill="#00ff88"/><ellipse cx="24" cy="32" rx="10" ry="5" transform="rotate(-20 24 32)" fill="#00cc6a"/><ellipse cx="36" cy="32" rx="10" ry="5" transform="rotate(20 36 32)" fill="#00cc6a"/><circle cx="42" cy="28" r="8" fill="#00ff88"/><circle cx="44" cy="26" r="2.5" fill="#030d0a"/><circle cx="44.8" cy="25.2" r=".8" fill="#fff"/><polygon points="49,27 56,24 50,30" fill="#00cc6a"/><ellipse id="cw-wing" cx="24" cy="30" rx="11" ry="4" transform="rotate(-30 24 30)" fill="#00ff8866"/></g></svg></div>
+<div id="cursor-ring"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div><div class="scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div id="neo-toast"></div>
+
+<div class="reg-card">
+  <div style="text-align:center;margin-bottom:28px;">
+    <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:900;letter-spacing:6px;color:var(--white);">
+      CUERVO<span style="color:var(--green);">STORE</span>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:.6rem;letter-spacing:4px;color:var(--green);opacity:.6;margin-top:4px;">// crear cuenta //</div>
+  </div>
+
+  <!-- Steps indicator -->
+  <div class="steps-indicator">
+    <div class="step-dot active" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+  </div>
+  <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--gray);letter-spacing:2px;margin-bottom:20px;" id="step-label">PASO 1 DE 3 — DATOS BÁSICOS</div>
+
+  <!-- STEP 1: Datos básicos -->
+  <div class="form-step active" id="step1">
+    <div class="form-group">
+      <label class="neo-label">▸ Nombre completo *</label>
+      <input id="reg-name" class="neo-input" type="text" placeholder="Tu nombre real"/>
+    </div>
+    <div class="form-group">
+      <label class="neo-label">▸ Correo electrónico *</label>
+      <input id="reg-email" class="neo-input" type="email" placeholder="tu@correo.com"/>
+    </div>
+    <div class="form-group">
+      <label class="neo-label">▸ Teléfono (para SMS)</label>
+      <input id="reg-phone" class="neo-input" type="tel" placeholder="+52 XXX XXX XXXX"/>
+    </div>
+    <div class="form-group">
+      <label class="neo-label">▸ Contraseña * (mínimo 6 caracteres)</label>
+      <input id="reg-pass" class="neo-input" type="password" placeholder="••••••••••"/>
+    </div>
+    <div class="form-group">
+      <label class="neo-label">▸ Confirmar contraseña *</label>
+      <input id="reg-pass2" class="neo-input" type="password" placeholder="••••••••••"/>
+    </div>
+    <button class="neo-btn full-width" onclick="goStep2()"><span>SIGUIENTE →</span></button>
+  </div>
+
+  <!-- STEP 2: Carrera y avatar -->
+  <div class="form-step" id="step2">
+    <div class="neo-divider"><span></span><small>ELIGE TU CARRERA</small><span></span></div>
+    <div class="form-group">
+      <label class="neo-label">▸ Carrera / Área *</label>
+      <select id="reg-career" class="neo-input" style="background:var(--bg2);">
+        <option value="">-- Selecciona --</option>
+        <option value="TICS">Tecnologías de la Información (TICS)</option>
+        <option value="Ventas">Ventas y Comercio</option>
+        <option value="Paramédico">Técnico en Urgencias Médicas / Paramédico</option>
+        <option value="Enfermería">Enfermería</option>
+        <option value="Mecatrónica">Mecatrónica</option>
+        <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+        <option value="Ingeniería Ferroviaria">Ingeniería Ferroviaria</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="neo-divider"><span></span><small>ELIGE TU AVATAR CUERVO</small><span></span></div>
+    <div class="avatar-grid" id="avatar-grid"></div>
+    <div style="display:flex;gap:12px;margin-top:16px;">
+      <button class="neo-btn" style="flex:1;" onclick="goStep1()"><span>← ATRÁS</span></button>
+      <button class="neo-btn" style="flex:2;" onclick="goStep3()"><span>SIGUIENTE →</span></button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Confirmación -->
+  <div class="form-step" id="step3">
+    <div class="confirm-box">
+      <div style="color:var(--green);letter-spacing:3px;margin-bottom:8px;">✓ CUENTA CREADA</div>
+      <p>Hemos enviado un código de confirmación a tu correo.</p>
+      <div class="confirm-code" id="show-token">——</div>
+      <p style="opacity:.6;font-size:.65rem;">En un sistema real, recibirías este código en tu correo/SMS.<br/>Por ahora cópialo arriba.</p>
+    </div>
+    <div class="form-group" style="margin-top:20px;">
+      <label class="neo-label">▸ Ingresa tu código de confirmación</label>
+      <input id="confirm-token" class="neo-input" type="text" placeholder="ABC12345" style="text-transform:uppercase;letter-spacing:6px;text-align:center;font-size:1.1rem;"/>
+    </div>
+    <button class="neo-btn full-width" onclick="confirmAccount()"><span>CONFIRMAR CUENTA</span></button>
+    <p style="text-align:center;margin-top:16px;font-family:var(--font-mono);font-size:.65rem;color:var(--gray);">
+      ¿Ya confirmaste? <a href="login.html" style="color:var(--green);">INICIA SESIÓN</a>
+    </p>
+  </div>
+
+  <p style="text-align:center;margin-top:20px;font-family:var(--font-mono);font-size:.65rem;color:var(--gray);">
+    ¿Ya tienes cuenta? <a href="login.html" style="color:var(--green);">INICIA SESIÓN</a>
+  </p>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  const AVATARS = [
+    { file:'assets/avatars/tics.svg',       label:'TICS',       career:'TICS' },
+    { file:'assets/avatars/ventas.svg',      label:'VENTAS',     career:'Ventas' },
+    { file:'assets/avatars/paramedico.svg',  label:'PARAMEDIC',  career:'Paramédico' },
+    { file:'assets/avatars/enfermeria.svg',  label:'ENFERMERÍA', career:'Enfermería' },
+    { file:'assets/avatars/mecanica.svg',    label:'MECATRÓN.',  career:'Mecatrónica' },
+    { file:'assets/avatars/industrial.svg',  label:'IND.',       career:'Ingeniería Industrial' },
+    { file:'assets/avatars/ferroviaria.svg', label:'FERROVIA.',  career:'Ingeniería Ferroviaria' },
+    { file:'assets/avatars/default.svg',     label:'DEFAULT',    career:'' },
+  ];
+
+  let selectedAvatar = AVATARS[0].file;
+  let regToken = '';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.getElementById('avatar-grid');
+    grid.innerHTML = AVATARS.map((a, i) => `
+      <div class="avatar-opt ${i===0?'selected':''}" onclick="selectAvatar(this,'${a.file}')" data-file="${a.file}">
+        <img src="../${a.file}" onerror="this.src='../assets/avatars/default.svg'"/>
+        <span>${a.label}</span>
+      </div>
+    `).join('');
+  });
+
+  function selectAvatar(el, file) {
+    document.querySelectorAll('.avatar-opt').forEach(a => a.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedAvatar = file;
+    const career = AVATARS.find(a => a.file === file)?.career;
+    if (career && document.getElementById('reg-career').value === '') {
+      document.getElementById('reg-career').value = career;
+    }
+  }
+
+  function goStep1() {
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('step1').classList.add('active');
+    document.getElementById('dot-2').classList.remove('active');
+    document.getElementById('step-label').textContent = 'PASO 1 DE 3 — DATOS BÁSICOS';
+  }
+
+  function goStep2() {
+    const name  = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const pass  = document.getElementById('reg-pass').value;
+    const pass2 = document.getElementById('reg-pass2').value;
+    if (!name || !email || !pass || !pass2) { Toast.warn('Completa todos los campos obligatorios'); return; }
+    if (pass !== pass2) { Toast.error('Las contraseñas no coinciden'); return; }
+    if (pass.length < 6)  { Toast.warn('La contraseña debe tener al menos 6 caracteres'); return; }
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(email)) { Toast.error('Correo inválido'); return; }
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step2').classList.add('active');
+    document.getElementById('dot-2').classList.add('active');
+    document.getElementById('step-label').textContent = 'PASO 2 DE 3 — CARRERA Y AVATAR';
+  }
+
+  function goStep3() {
+    const career = document.getElementById('reg-career').value;
+    if (!career) { Toast.warn('Selecciona tu carrera'); return; }
+    const name  = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const pass  = document.getElementById('reg-pass').value;
+    const res = Auth.register({ name, email, phone, password: pass, avatar: selectedAvatar, career });
+    if (!res.ok) { Toast.error(res.msg); return; }
+    regToken = res.token;
+    document.getElementById('show-token').textContent = res.token;
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('step3').classList.add('active');
+    document.getElementById('dot-3').classList.add('active');
+    document.getElementById('step-label').textContent = 'PASO 3 DE 3 — CONFIRMA TU CUENTA';
+    Toast.success('¡Cuenta creada! Ingresa tu código de confirmación');
+  }
+
+  function confirmAccount() {
+    const token = document.getElementById('confirm-token').value.trim().toUpperCase();
+    if (!token) { Toast.warn('Ingresa el código'); return; }
+    const res = Auth.confirmAccount(token);
+    if (res.ok) {
+      Toast.success(res.msg);
+      setTimeout(() => window.location.href = 'login.html', 1500);
+    } else {
+      Toast.error(res.msg);
+    }
+  }
+</script>
+</body>
+</html>

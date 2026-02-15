@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cuervo Store — Carrito</title>
+  <link rel="stylesheet" href="../css/globals.css"/>
+  <link rel="stylesheet" href="../css/layout.css"/>
+  <style>
+    .cart-item { display:grid; grid-template-columns:80px 1fr auto; gap:16px; align-items:center; padding:16px; background:var(--bg2); border:1px solid var(--border); margin-bottom:12px; clip-path:var(--clip-card); }
+    .checkout-grid { display:grid; grid-template-columns:1fr 380px; gap:32px; }
+    @media(max-width:900px){ .checkout-grid{grid-template-columns:1fr;} }
+    .order-summary { background:var(--bg2); border:1px solid var(--border); padding:28px; clip-path:var(--clip-card); position:sticky; top:80px; }
+    .summary-row { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:.78rem; padding:10px 0; border-bottom:1px solid var(--border); }
+    .summary-total { display:flex; justify-content:space-between; padding:14px 0; }
+    .summary-total span:first-child { font-family:var(--font-mono); font-size:.75rem; letter-spacing:2px; color:var(--green); }
+    .summary-total span:last-child { font-family:var(--font-display); font-size:1.4rem; font-weight:900; color:var(--green); text-shadow:0 0 8px var(--green-glow); }
+    /* Payment form */
+    .card-preview { background:linear-gradient(135deg,#0a1a12,#030d0a); border:1px solid var(--green); border-radius:12px; padding:24px; margin-bottom:24px; position:relative; overflow:hidden; height:160px; }
+    .card-preview::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle,var(--green-dim) 0%,transparent 70%); }
+    .card-preview-number { font-family:var(--font-mono); font-size:.95rem; letter-spacing:6px; color:var(--white); margin:20px 0 8px; position:relative; z-index:1; }
+    .card-preview-bottom { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:.65rem; color:var(--gray); position:relative; z-index:1; }
+    .card-type-icon { position:absolute; top:16px; right:16px; font-size:1.8rem; z-index:1; }
+    .tabs { display:flex; gap:8px; margin-bottom:24px; }
+    .tab { flex:1; padding:12px; text-align:center; font-family:var(--font-mono); font-size:.65rem; letter-spacing:3px; border:1px solid var(--border); cursor:pointer; transition:all .25s; clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px)); }
+    .tab.active { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+  </style>
+</head>
+<body>
+<div id="crow-cursor"><svg viewBox="0 0 64 64" fill="none"><g><ellipse cx="30" cy="38" rx="14" ry="10" fill="#00ff88"/><polygon points="16,38 6,48 14,37 6,35" fill="#00ff88"/><ellipse cx="24" cy="32" rx="10" ry="5" transform="rotate(-20 24 32)" fill="#00cc6a"/><ellipse cx="36" cy="32" rx="10" ry="5" transform="rotate(20 36 32)" fill="#00cc6a"/><circle cx="42" cy="28" r="8" fill="#00ff88"/><circle cx="44" cy="26" r="2.5" fill="#030d0a"/><circle cx="44.8" cy="25.2" r=".8" fill="#fff"/><polygon points="49,27 56,24 50,30" fill="#00cc6a"/><ellipse id="cw-wing" cx="24" cy="30" rx="11" ry="4" transform="rotate(-30 24 30)" fill="#00ff8866"/></g></svg></div>
+<div id="cursor-ring"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div><div class="scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div id="neo-toast"></div>
+<div id="main-nav"></div>
+
+<main class="cs-main">
+  <div class="cs-container">
+    <div class="page-header">
+      <h1>CARRITO</h1>
+      <p>// revisión y pago //</p>
+    </div>
+
+    <div id="cart-section">
+      <!-- filled dynamically -->
+    </div>
+  </div>
+</main>
+
+<!-- Payment Modal -->
+<div class="neo-modal-overlay" id="payment-modal">
+  <div class="neo-modal" style="position:relative;max-width:540px;">
+    <button class="neo-modal-close" onclick="closePayment()">✕</button>
+    <h3 style="font-size:.9rem;letter-spacing:4px;margin-bottom:20px;">⬡ PAGO SEGURO</h3>
+
+    <div class="card-preview" id="card-preview">
+      <div class="card-type-icon" id="card-icon">💳</div>
+      <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--gray);letter-spacing:3px;position:relative;z-index:1;">CUERVO STORE PAYMENTS</div>
+      <div class="card-preview-number" id="card-num-preview">•••• •••• •••• ••••</div>
+      <div class="card-preview-bottom">
+        <div><div style="font-size:.55rem;margin-bottom:2px;">TITULAR</div><div id="card-name-preview">TU NOMBRE</div></div>
+        <div><div style="font-size:.55rem;margin-bottom:2px;">EXPIRA</div><div id="card-exp-preview">MM/AA</div></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="setPayType('credit',this)">💳 CRÉDITO</div>
+      <div class="tab" onclick="setPayType('debit',this)">🏦 DÉBITO</div>
+    </div>
+
+    <div class="form-group">
+      <label class="neo-label">▸ Número de tarjeta</label>
+      <input id="card-number" class="neo-input" type="text" maxlength="19" placeholder="XXXX XXXX XXXX XXXX" oninput="formatCard(this)"/>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="form-group">
+        <label class="neo-label">▸ Fecha de expiración</label>
+        <input id="card-exp" class="neo-input" type="text" maxlength="5" placeholder="MM/AA" oninput="formatExp(this)"/>
+      </div>
+      <div class="form-group">
+        <label class="neo-label">▸ CVV</label>
+        <input id="card-cvv" class="neo-input" type="password" maxlength="4" placeholder="•••"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="neo-label">▸ Nombre en la tarjeta</label>
+      <input id="card-holder" class="neo-input" type="text" placeholder="COMO APARECE EN LA TARJETA" oninput="document.getElementById('card-name-preview').textContent=this.value||'TU NOMBRE'"/>
+    </div>
+
+    <div class="neo-divider"><span></span><small>DIRECCIÓN DE ENVÍO</small><span></span></div>
+
+    <div class="form-group">
+      <label class="neo-label">▸ Dirección completa</label>
+      <input id="addr-street" class="neo-input" type="text" placeholder="Calle, número, colonia"/>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="form-group">
+        <label class="neo-label">▸ Ciudad</label>
+        <input id="addr-city" class="neo-input" type="text" placeholder="Ciudad"/>
+      </div>
+      <div class="form-group">
+        <label class="neo-label">▸ C.P.</label>
+        <input id="addr-zip" class="neo-input" type="text" maxlength="5" placeholder="00000"/>
+      </div>
+    </div>
+
+    <div style="background:var(--green-dim);border:1px solid var(--border);padding:12px;font-family:var(--font-mono);font-size:.6rem;color:var(--gray);margin:12px 0;line-height:1.8;">
+      🔒 Tu pago es procesado de forma segura.<br/>
+      Los datos de tu tarjeta nunca se almacenan en texto plano.
+    </div>
+
+    <button class="neo-btn full-width" id="pay-btn" onclick="processPayment()">
+      <span id="pay-btn-text">PAGAR AHORA</span>
+    </button>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="neo-modal-overlay" id="success-modal">
+  <div class="neo-modal" style="text-align:center;position:relative;">
+    <div style="font-size:4rem;margin-bottom:16px;filter:drop-shadow(0 0 16px var(--green));">✓</div>
+    <h2 style="font-size:1.2rem;letter-spacing:4px;color:var(--green);margin-bottom:8px;">¡PAGO EXITOSO!</h2>
+    <p style="font-family:var(--font-mono);font-size:.75rem;color:var(--gray);margin-bottom:20px;">Tu orden ha sido procesada. Recibirás un correo de confirmación.</p>
+    <div id="order-confirmation" style="background:var(--green-dim);border:1px solid var(--border);padding:16px;margin:16px 0;font-family:var(--font-mono);font-size:.72rem;"></div>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;">
+      <button class="neo-btn" onclick="window.location.href='orders.html'"><span>MIS ÓRDENES</span></button>
+      <button class="neo-btn" style="border-color:var(--green-dark);" onclick="window.location.href='catalog.html'"><span>SEGUIR COMPRANDO</span></button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  let payType = 'credit';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderNav('');
+    renderCart();
+  });
+
+  function renderCart() {
+    const section = document.getElementById('cart-section');
+    if (Cart.items.length === 0) {
+      section.innerHTML = `
+        <div style="text-align:center;padding:80px 0;">
+          <div style="font-size:4rem;opacity:.2;margin-bottom:16px;">🛒</div>
+          <div style="font-family:var(--font-display);font-size:.9rem;letter-spacing:3px;color:var(--gray);">CARRITO VACÍO</div>
+          <p style="font-family:var(--font-mono);font-size:.75rem;color:var(--gray);margin:12px 0 24px;">Agrega productos para continuar</p>
+          <a href="catalog.html" class="neo-btn"><span>IR AL CATÁLOGO</span></a>
+        </div>`;
+      return;
+    }
+    const sub  = Cart.total();
+    const ship = sub > 999 ? 0 : 99;
+    const total = sub + ship;
+    section.innerHTML = `
+      <div class="checkout-grid">
+        <div>
+          <h2 class="cs-section-title">⬡ PRODUCTOS (${Cart.count()})</h2>
+          <div id="items-list"></div>
+        </div>
+        <div>
+          <div class="order-summary">
+            <h3 style="font-family:var(--font-mono);font-size:.7rem;letter-spacing:4px;color:var(--green);margin-bottom:16px;">RESUMEN DEL PEDIDO</h3>
+            <div class="summary-row"><span>Subtotal</span><span>${formatPrice(sub)}</span></div>
+            <div class="summary-row"><span>Envío</span><span>${ship===0?'<span style="color:var(--green)">GRATIS</span>':formatPrice(ship)}</span></div>
+            <div class="summary-row"><span>IVA (16%)</span><span>${formatPrice(sub*.16)}</span></div>
+            <div class="summary-total">
+              <span>TOTAL</span>
+              <span>${formatPrice(total + sub*.16)}</span>
+            </div>
+            <button class="neo-btn full-width" style="margin-top:16px;" onclick="openPayment()"><span>💳 PROCEDER AL PAGO</span></button>
+            <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--gray);text-align:center;margin-top:12px;line-height:1.8;">
+              🔒 Pago 100% seguro<br/>Tarjeta de crédito o débito
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    const list = document.getElementById('items-list');
+    list.innerHTML = Cart.items.map(item => `
+      <div class="cart-item">
+        <div style="width:80px;height:80px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.3;">
+          ${item.image ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;"/>` : '⬡'}
+        </div>
+        <div>
+          <div style="font-size:.9rem;margin-bottom:4px;">${item.title}</div>
+          <div style="font-family:var(--font-display);color:var(--green);font-size:1rem;">${formatPrice(item.price)}</div>
+          <div class="qty-control" style="margin-top:8px;">
+            <button class="qty-btn" onclick="updateQty('${item.productId}',-1)">−</button>
+            <span class="qty-input" style="display:flex;align-items:center;justify-content:center;">${item.qty}</span>
+            <button class="qty-btn" onclick="updateQty('${item.productId}',1)">+</button>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-display);color:var(--green);margin-bottom:8px;">${formatPrice(item.price*item.qty)}</div>
+          <button class="neo-btn danger" style="padding:6px 12px;font-size:.55rem;" onclick="removeItem('${item.productId}')"><span>✕</span></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateQty(id, d) {
+    const item = Cart.items.find(i => i.productId === id);
+    if (item) Cart.updateQty(id, item.qty + d);
+    renderCart();
+  }
+  function removeItem(id) { Cart.remove(id); renderCart(); Toast.info('Producto eliminado'); }
+
+  function setPayType(t, el) { payType = t; document.querySelectorAll('.tab').forEach(tb => tb.classList.remove('active')); el.classList.add('active'); }
+
+  function formatCard(inp) {
+    let v = inp.value.replace(/\D/g,'').substring(0,16);
+    inp.value = v.replace(/(.{4})/g,'$1 ').trim();
+    const disp = v.padEnd(16,'•').replace(/(.{4})/g,'$1 ').trim();
+    document.getElementById('card-num-preview').textContent = disp;
+    const first = v.substring(0,1);
+    document.getElementById('card-icon').textContent = first==='4'?'💳 Visa':first==='5'?'💳 MC':'💳';
+  }
+
+  function formatExp(inp) {
+    let v = inp.value.replace(/\D/g,'');
+    if (v.length >= 2) v = v.substring(0,2)+'/'+v.substring(2,4);
+    inp.value = v;
+    document.getElementById('card-exp-preview').textContent = v || 'MM/AA';
+  }
+
+  function openPayment() {
+    if (!Auth.isLoggedIn()) { Toast.warn('Inicia sesión para pagar'); setTimeout(()=>window.location.href='login.html',800); return; }
+    document.getElementById('payment-modal').classList.add('open');
+  }
+  function closePayment() { document.getElementById('payment-modal').classList.remove('open'); }
+
+  function processPayment() {
+    const num    = document.getElementById('card-number').value.replace(/\s/g,'');
+    const exp    = document.getElementById('card-exp').value;
+    const cvv    = document.getElementById('card-cvv').value;
+    const holder = document.getElementById('card-holder').value.trim();
+    const street = document.getElementById('addr-street').value.trim();
+    const city   = document.getElementById('addr-city').value.trim();
+    const zip    = document.getElementById('addr-zip').value.trim();
+    if (num.length < 13) { Toast.error('Número de tarjeta inválido'); return; }
+    if (!exp.match(/^\d{2}\/\d{2}$/)) { Toast.error('Fecha de expiración inválida'); return; }
+    if (cvv.length < 3) { Toast.error('CVV inválido'); return; }
+    if (!holder) { Toast.error('Ingresa el nombre del titular'); return; }
+    if (!street || !city || !zip) { Toast.error('Completa la dirección de envío'); return; }
+
+    document.getElementById('pay-btn-text').innerHTML = '<div class="neo-loader" style="margin:0 auto;"></div>';
+    document.getElementById('pay-btn').disabled = true;
+
+    setTimeout(() => {
+      const order = Orders.create(
+        Auth.current.id, Cart.items,
+        { cardNumber: num, type: payType, holder },
+        Cart.total() * 1.16, { street, city, zip }
+      );
+      Cart.clear();
+      document.getElementById('payment-modal').classList.remove('open');
+      document.getElementById('order-confirmation').innerHTML = `
+        <div style="color:var(--green);margin-bottom:8px;">ORDEN: ${order.order.id}</div>
+        TOTAL PAGADO: ${formatPrice(order.order.total * 1.16)}<br/>
+        FECHA: ${new Date().toLocaleString()}<br/>
+        TARJETA: ****${num.slice(-4)}
+      `;
+      document.getElementById('success-modal').classList.add('open');
+      // Save confirmation message
+      const msgs = DB.getMessages();
+      msgs.push({ type:'email', to:Auth.current.email, subject:'Confirmación de Orden — Cuervo Store', body:`Tu orden ${order.order.id} fue procesada exitosamente.`, read:false, createdAt:new Date().toISOString() });
+      DB.saveMessages(msgs);
+    }, 2000);
+  }
+</script>
+</body>
+</html>

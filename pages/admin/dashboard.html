@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cuervo Store — Panel Admin</title>
+  <link rel="stylesheet" href="../../css/globals.css"/>
+  <link rel="stylesheet" href="../../css/layout.css"/>
+  <style>
+    .admin-content { background:transparent; }
+    .mini-chart { display:flex; align-items:flex-end; gap:4px; height:50px; margin-top:12px; }
+    .mini-bar { flex:1; background:var(--green-glow); border-top:2px solid var(--green); border-radius:2px 2px 0 0; transition:height .5s ease; }
+    .action-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .user-avatar-sm { width:36px; height:36px; border-radius:50%; border:1px solid var(--border); object-fit:cover; }
+    .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+    .status-dot.green  { background:var(--green); box-shadow:0 0 4px var(--green); }
+    .status-dot.warn   { background:var(--warn); box-shadow:0 0 4px var(--warn); }
+    .status-dot.danger { background:var(--danger); box-shadow:0 0 4px var(--danger); }
+    .section-card { background:var(--bg2); border:1px solid var(--border); padding:24px; clip-path:var(--clip-card); margin-bottom:24px; }
+    .admin-topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+    .admin-topbar h2 { font-size:1.1rem; letter-spacing:4px; }
+  </style>
+</head>
+<body>
+<div id="crow-cursor"><svg viewBox="0 0 64 64" fill="none"><g><ellipse cx="30" cy="38" rx="14" ry="10" fill="#00ff88"/><polygon points="16,38 6,48 14,37 6,35" fill="#00ff88"/><ellipse cx="24" cy="32" rx="10" ry="5" transform="rotate(-20 24 32)" fill="#00cc6a"/><ellipse cx="36" cy="32" rx="10" ry="5" transform="rotate(20 36 32)" fill="#00cc6a"/><circle cx="42" cy="28" r="8" fill="#00ff88"/><circle cx="44" cy="26" r="2.5" fill="#030d0a"/><circle cx="44.8" cy="25.2" r=".8" fill="#fff"/><polygon points="49,27 56,24 50,30" fill="#00cc6a"/><ellipse id="cw-wing" cx="24" cy="30" rx="11" ry="4" transform="rotate(-30 24 30)" fill="#00ff8866"/></g></svg></div>
+<div id="cursor-ring"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div><div class="scanlines"></div>
+<div id="neo-toast"></div>
+<div id="main-nav"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);margin-bottom:8px;">
+      <div style="font-family:var(--font-display);font-size:.8rem;letter-spacing:4px;color:var(--green);">⬡ ADMIN</div>
+      <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--gray);margin-top:4px;" id="admin-name-sidebar">Mr.Candy</div>
+    </div>
+    <a class="admin-menu-item active" id="menu-dashboard" onclick="showSection('dashboard',this)">
+      <span class="icon">◈</span>DASHBOARD
+    </a>
+    <a class="admin-menu-item" id="menu-users" onclick="showSection('users',this)">
+      <span class="icon">⬡</span>USUARIOS
+    </a>
+    <a class="admin-menu-item" id="menu-products" onclick="showSection('products',this)">
+      <span class="icon">◆</span>PRODUCTOS
+    </a>
+    <a class="admin-menu-item" id="menu-orders" onclick="showSection('orders',this)">
+      <span class="icon">✦</span>ÓRDENES
+    </a>
+    <a class="admin-menu-item" id="menu-sellers" onclick="showSection('sellers',this)">
+      <span class="icon">◉</span>VENDEDORES
+    </a>
+    <a class="admin-menu-item" id="menu-messages" onclick="showSection('messages',this)">
+      <span class="icon">✉</span>MENSAJES <span id="msg-badge" style="font-size:.55rem;background:var(--danger);color:white;padding:1px 6px;border-radius:8px;margin-left:4px;display:none;"></span>
+    </a>
+    <div style="border-top:1px solid var(--border);margin:12px 0;"></div>
+    <a class="admin-menu-item" href="../../index.html"><span class="icon">←</span>VER SITIO</a>
+    <a class="admin-menu-item" onclick="Auth.logout()" style="color:var(--danger);"><span class="icon">⏻</span>SALIR</a>
+  </aside>
+
+  <!-- Content -->
+  <div class="admin-content" style="padding:24px;min-height:100vh;padding-top:88px;">
+    <div id="admin-sections"></div>
+  </div>
+</div>
+
+<script src="../../js/app.js"></script>
+<script>
+  let currentSection = 'dashboard';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    Auth.init();
+    if (!Auth.requireAdmin()) return;
+    renderNav('admin');
+    document.getElementById('admin-name-sidebar').textContent = Auth.current.name;
+    updateMsgBadge();
+    showSection('dashboard', document.getElementById('menu-dashboard'));
+  });
+
+  function updateMsgBadge() {
+    const unread = DB.getMessages().filter(m => !m.read).length;
+    const badge  = document.getElementById('msg-badge');
+    if (unread > 0) { badge.textContent = unread; badge.style.display = 'inline'; }
+    else badge.style.display = 'none';
+  }
+
+  function showSection(name, el) {
+    currentSection = name;
+    document.querySelectorAll('.admin-menu-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    const sec = document.getElementById('admin-sections');
+    sec.innerHTML = '';
+    if (name === 'dashboard') renderDashboard();
+    else if (name === 'users')    renderUsers();
+    else if (name === 'products') renderProducts();
+    else if (name === 'orders')   renderOrders();
+    else if (name === 'sellers')  renderSellers();
+    else if (name === 'messages') renderMessages();
+  }
+
+  // ── DASHBOARD ──────────────────────────────────────
+  function renderDashboard() {
+    const users    = DB.getUsers();
+    const products = DB.getProducts();
+    const orders   = DB.getOrders();
+    const revenue  = orders.reduce((s,o) => s + (o.total||0)*1.16, 0);
+    const pending  = products.filter(p => p.status === 'pending').length;
+    const sec = document.getElementById('admin-sections');
+    sec.innerHTML = `
+      <div class="admin-topbar">
+        <h2>DASHBOARD</h2>
+        <div style="font-family:var(--font-mono);font-size:.65rem;color:var(--gray);">
+          ACTUALIZADO: ${new Date().toLocaleString()}
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value">${users.length}</div><div class="stat-label">Usuarios Totales</div><div class="stat-change up">↑ Sistema activo</div></div>
+        <div class="stat-card"><div class="stat-value">${products.filter(p=>p.status==='approved').length}</div><div class="stat-label">Productos Activos</div><div class="stat-change ${pending>0?'down':'up'}">${pending>0?`⚠ ${pending} pendientes`:'✓ Todo aprobado'}</div></div>
+        <div class="stat-card"><div class="stat-value">${orders.length}</div><div class="stat-label">Órdenes Totales</div><div class="stat-change up">↑ Ventas registradas</div></div>
+        <div class="stat-card"><div class="stat-value">${formatPrice(revenue)}</div><div class="stat-label">Ingresos Totales</div><div class="stat-change up">↑ Incluye IVA</div></div>
+      </div>
+
+      <!-- Mini charts -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+        <div class="section-card">
+          <div style="font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;color:var(--green);margin-bottom:4px;">ACTIVIDAD RECIENTE</div>
+          <div class="mini-chart" id="mini-chart-orders"></div>
+        </div>
+        <div class="section-card">
+          <div style="font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;color:var(--green);margin-bottom:4px;">DISTRIBUCIÓN POR ROL</div>
+          <div style="margin-top:12px;">
+            ${['admin','seller','buyer'].map(role => {
+              const count = users.filter(u => u.role === role).length;
+              const pct   = users.length ? Math.round(count/users.length*100) : 0;
+              return `<div style="margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.65rem;margin-bottom:4px;">
+                  <span style="color:var(--gray);text-transform:uppercase;">${role}</span>
+                  <span style="color:var(--green);">${count} (${pct}%)</span>
+                </div>
+                <div class="neo-progress"><div class="neo-progress-fill" style="width:${pct}%"></div></div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="section-card">
+        <div style="font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;color:var(--green);margin-bottom:16px;">ACCIONES RÁPIDAS</div>
+        <div class="action-row">
+          <button class="neo-btn" onclick="showSection('products',document.getElementById('menu-products'))"><span>⬡ REVISAR PRODUCTOS</span></button>
+          <button class="neo-btn warn"  onclick="showSection('sellers',document.getElementById('menu-sellers'))"><span>◉ SOLICITUDES VENDEDOR</span></button>
+          <button class="neo-btn"  onclick="showSection('orders',document.getElementById('menu-orders'))"><span>✦ VER ÓRDENES</span></button>
+          <button class="neo-btn" style="border-color:var(--info);color:var(--info);" onclick="showSection('messages',document.getElementById('menu-messages'))"><span>✉ MENSAJES</span></button>
+        </div>
+      </div>
+
+      <!-- Recent orders -->
+      <div class="section-card">
+        <div style="font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;color:var(--green);margin-bottom:16px;">ÓRDENES RECIENTES</div>
+        <div style="overflow-x:auto;">
+          <table class="neo-table">
+            <thead><tr><th>ID</th><th>COMPRADOR</th><th>TOTAL</th><th>STATUS</th><th>FECHA</th></tr></thead>
+            <tbody>
+              ${orders.slice(-5).reverse().map(o => {
+                const buyer = DB.getUsers().find(u => u.id === o.buyerId);
+                return `<tr>
+                  <td style="font-family:var(--font-mono);font-size:.65rem;color:var(--green);">${o.id}</td>
+                  <td>${buyer?.name || o.buyerId}</td>
+                  <td style="color:var(--green);">${formatPrice(o.total*1.16)}</td>
+                  <td><span class="neo-badge">${o.status}</span></td>
+                  <td style="font-family:var(--font-mono);font-size:.65rem;color:var(--gray);">${new Date(o.createdAt).toLocaleDateString()}</td>
+                </tr>`;
+              }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--gray);">Sin órdenes</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    // Mini chart bars
+    const bars = document.getElementById('mini-chart-orders');
+    const data = Array.from({length:7},()=>Math.floor(Math.random()*100));
+    bars.innerHTML = data.map((v,i) => `<div class="mini-bar" style="height:${v}%;opacity:${.4+i*.08};"></div>`).join('');
+  }
+
+  // ── USERS ──────────────────────────────────────────
+  function renderUsers(filter='') {
+    let users = DB.getUsers();
+    if (filter) users = users.filter(u => u.name.toLowerCase().includes(filter) || u.email.toLowerCase().includes(filter));
+    const sec = document.getElementById('admin-sections');
+    sec.innerHTML = `
+      <div class="admin-topbar">
+        <h2>USUARIOS (${users.length})</h2>
+        <div style="display:flex;gap:8px;">
+          <input id="user-search" class="neo-input" style="width:220px;" placeholder="Buscar por nombre/email..." oninput="renderUsers(this.value.toLowerCase())"/>
+        </div>
+      </div>
+      <div class="section-card" style="overflow-x:auto;">
+        <table class="neo-table">
+          <thead><tr><th>AVATAR</th><th>NOMBRE</th><th>EMAIL</th><th>ROL</th><th>CARRERA</th><th>ESTADO</th><th>ACCIONES</th></tr></thead>
+          <tbody>
+            ${users.map(u => `
+              <tr>
+                <td><img class="user-avatar-sm" src="../../${u.avatar||'assets/avatars/default.svg'}" onerror="this.src='../../assets/avatars/default.svg'"/></td>
+                <td>${u.name}</td>
+                <td style="font-family:var(--font-mono);font-size:.7rem;">${u.email}</td>
+                <td><span class="neo-badge ${u.role==='admin'?'warn':''}">${u.role.toUpperCase()}</span></td>
+                <td style="font-family:var(--font-mono);font-size:.68rem;color:var(--gray);">${u.career||'—'}</td>
+                <td>
+                  <span class="status-dot ${u.banned?'danger':u.confirmed?'green':'warn'}"></span>
+                  <span style="font-family:var(--font-mono);font-size:.65rem;">${u.banned?'BANEADO':u.confirmed?'ACTIVO':'PENDIENTE'}</span>
+                </td>
+                <td>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    ${u.role!=='seller'&&u.role!=='admin'?`<button class="neo-btn" style="padding:5px 10px;font-size:.55rem;" onclick="makeRole('${u.id}','seller')"><span>+VENDOR</span></button>`:''}
+                    ${u.banned
+                      ? `<button class="neo-btn" style="padding:5px 10px;font-size:.55rem;" onclick="toggleBan('${u.id}',false)"><span>DESBANEAR</span></button>`
+                      : `<button class="neo-btn danger" style="padding:5px 10px;font-size:.55rem;" onclick="toggleBan('${u.id}',true)"><span>BANEAR</span></button>`
+                    }
+                    ${!u.confirmed?`<button class="neo-btn" style="padding:5px 10px;font-size:.55rem;border-color:var(--info);color:var(--info);" onclick="forceConfirm('${u.id}')"><span>CONFIRMAR</span></button>`:''}
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function makeRole(id, role) {
+    const users = DB.getUsers(); const idx = users.findIndex(u=>u.id===id);
+    if(idx>-1){users[idx].role=role;DB.saveUsers(users);} Toast.success('Rol actualizado'); renderUsers();
+  }
+  function toggleBan(id, ban) {
+    const users = DB.getUsers(); const idx = users.findIndex(u=>u.id===id);
+    if(idx>-1){users[idx].banned=ban;DB.saveUsers(users);} Toast.success(ban?'Usuario baneado':'Usuario desbaneado'); renderUsers();
+  }
+  function forceConfirm(id) {
+    const users = DB.getUsers(); const idx = users.findIndex(u=>u.id===id);
+    if(idx>-1){users[idx].confirmed=true;users[idx].confirmToken=null;DB.saveUsers(users);} Toast.success('Cuenta confirmada'); renderUsers();
+  }
+
+  // ── PRODUCTS ───────────────────────────────────────
+  function renderProducts(filter='') {
+    let products = DB.getProducts();
+    if (filter) products = products.filter(p=>p.title.toLowerCase().includes(filter));
+    const sec = document.getElementById('admin-sections');
+    sec.innerHTML = `
+      <div class="admin-topbar">
+        <h2>PRODUCTOS (${products.length})</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input class="neo-input" style="width:200px;" placeholder="Buscar..." oninput="renderProducts(this.value.toLowerCase())"/>
+          <select class="neo-input" style="width:160px;background:var(--bg2);" onchange="filterProductsByStatus(this.value)">
+            <option value="">TODOS</option>
+            <option value="pending">PENDIENTES</option>
+            <option value="approved">APROBADOS</option>
+            <option value="rejected">RECHAZADOS</option>
+          </select>
+        </div>
+      </div>
+      <div class="section-card" style="overflow-x:auto;">
+        <table class="neo-table">
+          <thead><tr><th>TÍTULO</th><th>VENDEDOR</th><th>PRECIO</th><th>CATEGORÍA</th><th>STATUS</th><th>VENDIDOS</th><th>ACCIONES</th></tr></thead>
+          <tbody>
+            ${products.map(p => `
+              <tr>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p.title}">${p.title}</td>
+                <td style="font-family:var(--font-mono);font-size:.7rem;">${p.sellerName}</td>
+                <td style="color:var(--green);font-family:var(--font-display);">${formatPrice(p.price)}</td>
+                <td><span class="neo-badge">${p.category}</span></td>
+                <td>
+                  <span class="status-dot ${p.status==='approved'?'green':p.status==='pending'?'warn':'danger'}"></span>
+                  <span style="font-family:var(--font-mono);font-size:.65rem;">${p.status.toUpperCase()}</span>
+                </td>
+                <td style="font-family:var(--font-mono);">${p.sold}</td>
+                <td>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    ${p.status!=='approved'?`<button class="neo-btn" style="padding:5px 10px;font-size:.55rem;" onclick="setProductStatus('${p.id}','approved')"><span>✓ APROBAR</span></button>`:''}
+                    ${p.status!=='rejected'?`<button class="neo-btn danger" style="padding:5px 10px;font-size:.55rem;" onclick="setProductStatus('${p.id}','rejected')"><span>✕ RECHAZAR</span></button>`:''}
+                    <button class="neo-btn" style="padding:5px 10px;font-size:.55rem;border-color:var(--danger);color:var(--danger);" onclick="deleteProductAdmin('${p.id}')"><span>🗑</span></button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function filterProductsByStatus(status) {
+    let products = DB.getProducts();
+    if (status) products = products.filter(p => p.status === status);
+    renderProducts();
+  }
+  function setProductStatus(id, status) { Products.update(id, {status}); Toast.success('Producto '+status); renderProducts(); }
+  function deleteProductAdmin(id) { if(!confirm('¿Eliminar?'))return; Products.delete(id); Toast.success('Eliminado'); renderProducts(); }
+
+  // ── ORDERS ─────────────────────────────────────────
+  function renderOrders() {
+    const orders = DB.getOrders();
+    const sec = document.getElementById('admin-sections');
+    sec.innerHTML = `
+      <div class="admin-topbar">
+        <h2>ÓRDENES (${orders.length})</h2>
+        <div style="font-family:var(--font-mono);font-size:.7rem;color:var(--green);">
+          TOTAL: ${formatPrice(orders.reduce((s,o)=>s+o.total*1.16,0))}
+        </div>
+      </div>
+      <div class="section-card" style="overflow-x:auto;">
+        <table class="neo-table">
+          <thead><tr><th>ID ORDEN</th><th>COMPRADOR</th><th>PRODUCTOS</th><th>TOTAL</th><th>TARJETA</th><th>STATUS</th><th>FECHA</th><th>ACCIÓN</th></tr></thead>
+          <tbody>
+            ${orders.length===0?'<tr><td colspan="8" style="text-align:center;color:var(--gray);">Sin órdenes</td></tr>':
+              orders.slice().reverse().map(o => {
+                const buyer = DB.getUsers().find(u=>u.id===o.buyerId);
+                return `<tr>
+                  <td style="font-family:var(--font-mono);font-size:.65rem;color:var(--green);">${o.id}</td>
+                  <td>${buyer?.name||o.buyerId}</td>
+                  <td style="font-size:.72rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;">${o.items.map(i=>i.title).join(', ')}</td>
+                  <td style="color:var(--green);font-family:var(--font-display);">${formatPrice(o.total*1.16)}</td>
+                  <td style="font-family:var(--font-mono);font-size:.65rem;">${o.payment.cardNumber} ${o.payment.type}</td>
+                  <td><span class="neo-badge">${o.status}</span></td>
+                  <td style="font-family:var(--font-mono);font-size:.65rem;color:var(--gray);">${new Date(o.createdAt).toLocaleDateString()}</td>
+                  <td>
+                    <select class="neo-input" style="font-size:.6rem;padding:4px;background:var(--bg);" onchange="updateOrderStatus('${o.id}',this.value)">
+                      ${['pagado','enviado','entregado','cancelado'].map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
+                    </select>
+                  </td>
+                </tr>`;
+              }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+  function updateOrderStatus(id, status) { Orders.updateStatus(id, status); Toast.success('Estado actualizado'); }
+
+  // ── SELLERS ────────────────────────────────────────
+  function renderSellers() {
+    const users = DB.getUsers().filter(u => u.sellerRequested || u.role==='seller');
+    const sec = document.getElementById('admin-sections');
+    sec.innerHTML = `
+      <div class="admin-topbar"><h2>SOLICITUDES DE VENDEDOR (${users.length})</h2></div>
+      <div class="section-card" style="overflow-x:auto;">
+        <table class="neo-table">
+          <thead><tr><th>USUARIO</th><th>EMAIL</th><th>ROL ACTUAL</th><th>RAZÓN</th><th>ACCIÓN</th></tr></thead>
+          <tbody>
+            ${users.length===0?'<tr><td colspan="5" style="text-align:center;color:var(--gray);">Sin solicitudes</td></tr>':
+              users.map(u=>`<tr>
+                <td>${u.name}</td>
+                <td style="font-family:var(--font-mono);font-size:.7rem;">${u.email}</td>
+                <td><span class="neo-badge ${u.role==='seller'?'':'warn'}">${u.role.toUpperCase()}</span></td>
+                <td style="font-family:var(--font-mono);font-size:.65rem;color:var(--gray);max-width:200px;">${u.sellerReason||'—'}</td>
+                <td>
+                  ${u.role!=='seller'?`<button class="neo-btn" style="padding:5px 12px;font-size:.6rem;" onclick="makeRole('${u.id}','seller')"><span>✓ APROBAR</span></button>`:'<span style="color:var(--green);font-family:var(--font-mono);font-size:.65rem;">VENDEDOR ACTIVO</span>'}
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // ── MESSAGES ───────────────────────────────────────
+  function renderMessages() {
+    const msgs = DB.getMessages();
+    // Mark all as read
+    msgs.forEach(m => m.read = true);
+    DB.saveMessages(msgs);
+    updateMsgBadge();
+    const sec = document.getElementById('admin-sections');
+    sec.innerHTML = `
+      <div class="admin-topbar"><h2>MENSAJES DEL SISTEMA (${msgs.length})</h2></div>
+      ${msgs.length===0?`<p style="font-family:var(--font-mono);font-size:.75rem;color:var(--gray);">Sin mensajes.</p>`:
+        msgs.slice().reverse().map(m=>`
+          <div class="section-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+              <div>
+                <span class="neo-badge ${m.type==='email'?'':'info'}">${m.type.toUpperCase()}</span>
+                <span style="font-family:var(--font-mono);font-size:.65rem;color:var(--green);margin-left:10px;">${m.subject||''}</span>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:.6rem;color:var(--gray);">${new Date(m.createdAt).toLocaleString()}</span>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:.7rem;color:var(--gray);margin-bottom:6px;">PARA: ${m.to}</div>
+            <div style="font-size:.82rem;color:rgba(240,255,248,.7);">${m.body}</div>
+            ${m.token?`<div style="margin-top:8px;font-family:var(--font-mono);font-size:.65rem;">TOKEN: <span style="color:var(--green);letter-spacing:4px;">${m.token}</span></div>`:''}
+          </div>
+        `).join('')}
+    `;
+  }
+</script>
+</body>
+</html>

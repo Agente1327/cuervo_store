@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cuervo Store — Marketplace Futurista</title>
+  <link rel="stylesheet" href="css/globals.css"/>
+  <link rel="stylesheet" href="css/layout.css"/>
+</head>
+<body>
+<!-- Cursor -->
+<div id="crow-cursor"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><g><ellipse cx="30" cy="38" rx="14" ry="10" fill="#00ff88"/><polygon points="16,38 6,48 14,37 6,35" fill="#00ff88"/><ellipse cx="24" cy="32" rx="10" ry="5" transform="rotate(-20 24 32)" fill="#00cc6a"/><ellipse cx="36" cy="32" rx="10" ry="5" transform="rotate(20 36 32)" fill="#00cc6a"/><circle cx="42" cy="28" r="8" fill="#00ff88"/><circle cx="44" cy="26" r="2.5" fill="#030d0a"/><circle cx="44.8" cy="25.2" r=".8" fill="#fff"/><polygon points="49,27 56,24 50,30" fill="#00cc6a"/><ellipse id="cw-wing" cx="24" cy="30" rx="11" ry="4" transform="rotate(-30 24 30)" fill="#00ff8866"/></g></svg></div>
+<div id="cursor-ring"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div id="neo-toast"></div>
+<div id="main-nav"></div>
+
+<main class="cs-main">
+  <!-- HERO -->
+  <section class="cs-hero cs-container">
+    <div class="hero-content">
+      <p class="hero-eyebrow">▸ El marketplace del futuro ya llegó</p>
+      <h1 class="hero-title brand-name">CUERVO<br/><span>STORE</span></h1>
+      <p class="hero-sub">Compra, vende y conecta con la comunidad más futurista de México. Desde tecnología hasta equipos médicos — todo en un lugar seguro.</p>
+      <div class="hero-actions">
+        <a href="pages/catalog.html" class="neo-btn"><span>▸ EXPLORAR CATÁLOGO</span></a>
+        <a href="pages/register.html" class="neo-btn" style="border-color:var(--green-dark);"><span>CREAR CUENTA</span></a>
+      </div>
+    </div>
+    <div class="hero-gfx">🦅</div>
+  </section>
+
+  <!-- STATS BAR -->
+  <div style="position:relative;z-index:5;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 0;margin-bottom:48px;">
+    <div class="cs-container">
+      <div id="stats-bar" style="display:flex;gap:48px;justify-content:center;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
+  <!-- FEATURED PRODUCTS -->
+  <section class="cs-section cs-container">
+    <h2 class="cs-section-title">⬡ PRODUCTOS DESTACADOS</h2>
+    <div id="featured-grid" class="product-grid"></div>
+    <div style="text-align:center;margin-top:32px;">
+      <a href="pages/catalog.html" class="neo-btn"><span>VER TODO EL CATÁLOGO →</span></a>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="cs-section" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:48px 0;">
+    <div class="cs-container">
+      <h2 class="cs-section-title">⬡ CATEGORÍAS</h2>
+      <div id="categories-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;"></div>
+    </div>
+  </section>
+
+  <!-- CAREER AVATARS -->
+  <section class="cs-section cs-container">
+    <h2 class="cs-section-title">⬡ NUESTRA COMUNIDAD</h2>
+    <p style="font-family:var(--font-mono);font-size:.75rem;color:var(--gray);margin-bottom:32px;letter-spacing:2px;">Agentes de todas las carreras, unidos en un mismo marketplace.</p>
+    <div id="careers-grid" style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;"></div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="cs-section" style="background:var(--bg2);border-top:1px solid var(--border);padding:60px 0;">
+    <div class="cs-container">
+      <h2 class="cs-section-title">⬡ CÓMO FUNCIONA</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:8px;" id="steps-grid"></div>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="cs-footer">
+  <div class="cs-container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">CUERVO<span>STORE</span></div>
+        <p style="font-size:.8rem;color:var(--gray);margin-top:8px;line-height:1.7;">El marketplace futurista creado por Mr.Candy. Compra segura, comunidad real.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Marketplace</h4>
+        <ul>
+          <li><a href="pages/catalog.html">Catálogo</a></li>
+          <li><a href="pages/sell.html">Vender</a></li>
+          <li><a href="pages/cart.html">Mi Carrito</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Cuenta</h4>
+        <ul>
+          <li><a href="pages/login.html">Iniciar Sesión</a></li>
+          <li><a href="pages/register.html">Registro</a></li>
+          <li><a href="pages/profile.html">Mi Perfil</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contacto</h4>
+        <ul>
+          <li><a href="#">soporte@cuervostore.mx</a></li>
+          <li><a href="#">Mr.Candy — Fundador</a></li>
+          <li><a href="pages/admin/dashboard.html">Panel Admin</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-copy">
+      © 2025 CUERVO STORE — CREADO POR MR.CANDY — TODOS LOS DERECHOS RESERVADOS
+    </div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+  const CATEGORIES = [
+    { id:'electronica', label:'Electrónica', icon:'⚡' },
+    { id:'salud',       label:'Salud & Médico', icon:'⚕' },
+    { id:'libros',      label:'Libros & Cursos', icon:'📚' },
+    { id:'ropa',        label:'Ropa & Uniforme', icon:'👔' },
+    { id:'seguridad',   label:'Seguridad', icon:'🛡' },
+    { id:'herramientas',label:'Herramientas', icon:'🔧' },
+    { id:'otros',       label:'Otros', icon:'⬡' },
+  ];
+
+  const CAREERS = [
+    { id:'tics',       label:'TICS', avatar:'assets/avatars/tics.svg' },
+    { id:'ventas',     label:'Ventas', avatar:'assets/avatars/ventas.svg' },
+    { id:'paramedico', label:'Paramédico', avatar:'assets/avatars/paramedico.svg' },
+    { id:'enfermeria', label:'Enfermería', avatar:'assets/avatars/enfermeria.svg' },
+    { id:'mecanica',   label:'Mecatrónica', avatar:'assets/avatars/mecanica.svg' },
+    { id:'industrial', label:'Ing. Industrial', avatar:'assets/avatars/industrial.svg' },
+    { id:'ferroviaria',label:'Ing. Ferroviaria', avatar:'assets/avatars/ferroviaria.svg' },
+  ];
+
+  const STEPS = [
+    { n:'01', title:'Regístrate', desc:'Crea tu cuenta con verificación por correo en segundos.', icon:'✦' },
+    { n:'02', title:'Explora', desc:'Miles de productos de vendedores verificados.', icon:'◈' },
+    { n:'03', title:'Compra Seguro', desc:'Paga con tarjeta de crédito o débito de forma cifrada.', icon:'⬡' },
+    { n:'04', title:'Vende', desc:'Sube tus productos con fotos y empieza a ganar.', icon:'◆' },
+  ];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderNav('home');
+
+    // Stats
+    const products = Products.getApproved();
+    const users    = DB.getUsers();
+    const orders   = Orders.getAll();
+    const statsBar = document.getElementById('stats-bar');
+    const stats = [
+      { v: products.length, l:'Productos' },
+      { v: users.length,    l:'Usuarios' },
+      { v: orders.length,   l:'Órdenes' },
+      { v: '100%',          l:'Seguro' },
+    ];
+    statsBar.innerHTML = stats.map(s => `
+      <div style="text-align:center;animation:fadeUp .4s ease both">
+        <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:900;color:var(--green);text-shadow:0 0 10px var(--green-glow)">${s.v}</div>
+        <div style="font-family:var(--font-mono);font-size:.6rem;letter-spacing:3px;color:var(--gray);text-transform:uppercase;margin-top:4px">${s.l}</div>
+      </div>
+    `).join('');
+
+    // Featured
+    const featuredGrid = document.getElementById('featured-grid');
+    const featured = products.slice(0, 6);
+    featuredGrid.innerHTML = featured.map(p => productCard(p)).join('');
+
+    // Categories
+    const catGrid = document.getElementById('categories-grid');
+    catGrid.innerHTML = CATEGORIES.map(c => `
+      <a href="pages/catalog.html?cat=${c.id}" style="display:block;text-decoration:none;">
+        <div class="neo-card" style="padding:24px;text-align:center;cursor:pointer;transition:all .3s;">
+          <div style="font-size:2rem;margin-bottom:10px;">${c.icon}</div>
+          <div style="font-family:var(--font-mono);font-size:.65rem;letter-spacing:3px;color:var(--green);text-transform:uppercase;">${c.label}</div>
+        </div>
+      </a>
+    `).join('');
+
+    // Careers
+    const careersGrid = document.getElementById('careers-grid');
+    careersGrid.innerHTML = CAREERS.map(c => `
+      <div style="text-align:center;animation:fadeUp .4s ease both;">
+        <div class="avatar-wrap" style="width:80px;height:80px;margin:0 auto 10px;cursor:pointer;"
+          onclick="window.location.href='pages/catalog.html'">
+          <img src="${c.avatar}" onerror="this.src='assets/avatars/default.svg'" style="width:100%;height:100%;"/>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:.6rem;letter-spacing:2px;color:var(--green);opacity:.8;text-transform:uppercase;">${c.label}</div>
+      </div>
+    `).join('');
+
+    // Steps
+    const stepsGrid = document.getElementById('steps-grid');
+    stepsGrid.innerHTML = STEPS.map((s, i) => `
+      <div class="neo-card" style="padding:28px;animation:fadeUp .4s ${i*.1}s ease both;">
+        <div style="font-family:var(--font-display);font-size:2rem;font-weight:900;color:var(--green-dim);margin-bottom:12px;">${s.n}</div>
+        <div style="font-size:1.5rem;margin-bottom:10px;color:var(--green);">${s.icon}</div>
+        <h3 style="font-size:.9rem;letter-spacing:3px;margin-bottom:8px;">${s.title}</h3>
+        <p style="font-family:var(--font-mono);font-size:.72rem;color:var(--gray);line-height:1.7;">${s.desc}</p>
+      </div>
+    `).join('');
+  });
+
+  function productCard(p) {
+    const stars = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating));
+    return `
+      <div class="product-card" onclick="window.location.href='pages/product.html?id=${p.id}'">
+        <div class="product-card-img" style="background:var(--bg3);">
+          ${p.images && p.images.length
+            ? `<img src="${p.images[0]}" style="width:100%;height:200px;object-fit:cover;"/>`
+            : `<div style="font-size:4rem;opacity:.2">⬡</div>`}
+        </div>
+        <div class="product-card-body">
+          <div class="product-tag">${p.category}</div>
+          <div class="product-title">${p.title}</div>
+          <div style="color:var(--warn);font-size:.8rem;margin:4px 0;">${stars} <span style="color:var(--gray);font-family:var(--font-mono);font-size:.65rem;">(${p.rating})</span></div>
+          <div class="product-price">${formatPrice(p.price)}</div>
+          <div class="product-seller">por ${p.sellerName}</div>
+        </div>
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>
