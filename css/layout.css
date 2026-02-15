@@ -155,25 +155,71 @@
 .footer-col ul li a:hover { color: var(--green); }
 
 /* ── ADMIN SIDEBAR ── */
-.admin-layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; padding-top: 64px; }
-.admin-sidebar {
-  background: var(--bg2); border-right: 1px solid var(--border);
-  padding: 24px 0; position: fixed; top: 64px; left: 0;
-  width: 220px; height: calc(100vh - 64px); overflow-y: auto; z-index: 100;
+.admin-layout {
+  display: flex;               /* Cambiamos grid por flex */
+  min-height: 100vh;
+  padding-top: 64px;           /* Altura del navbar superior */
 }
+
+/* ───────── SIDEBAR ───────── */
+
+.admin-sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+
+  position: fixed;
+  top: 64px;                   /* debajo del navbar */
+  left: 0;
+
+  width: 220px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+
+  z-index: 100;
+}
+
+/* ───────── MENU ITEMS ───────── */
+
 .admin-menu-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 24px; font-family: var(--font-mono); font-size: .7rem;
-  letter-spacing: 2px; color: rgba(240,255,248,.5); cursor: pointer;
-  transition: all .2s; text-decoration: none; text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 24px;
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+
+  color: rgba(240,255,248,.5);
+  cursor: pointer;
+  text-decoration: none;
+
+  transition: all .2s ease;
   border-left: 2px solid transparent;
 }
-.admin-menu-item:hover, .admin-menu-item.active {
-  color: var(--green); background: var(--green-dim);
+
+.admin-menu-item:hover,
+.admin-menu-item.active {
+  color: var(--green);
+  background: var(--green-dim);
   border-left-color: var(--green);
 }
-.admin-menu-item .icon { font-size: 1rem; }
-.admin-content { margin-left: 220px; padding: 32px; }
+
+.admin-menu-item .icon {
+  font-size: 1rem;
+}
+
+/* ───────── CONTENT ───────── */
+
+.admin-content {
+  flex: 1;                     /* Ocupa todo el espacio restante */
+  margin-left: 220px;          /* Espacio del sidebar */
+  padding: 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
 
 /* ── STATS CARDS ── */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
